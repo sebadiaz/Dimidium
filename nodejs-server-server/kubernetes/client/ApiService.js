@@ -1,4 +1,6 @@
 
+'use strict';
+
 const Api = require('kubernetes-client');
 exports.getCore = function() {
     

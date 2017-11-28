@@ -1,7 +1,8 @@
 
 'use strict';
-
+var DimAppice = require('../kubernetes/client/DimAppService');
 var Namespace = require('../kubernetes/client/NamespaceService');
+
 var Helm = require('../kubernetes/helm/HelmService');
 /**
  * Add a new pet to the store
@@ -11,6 +12,8 @@ var Helm = require('../kubernetes/helm/HelmService');
  * no response value expected for this operation
  **/
 exports.createApp = function(body) {
+ DimAppice.createDefinition();
+ 
     var str = JSON.stringify(body);
     console.log('body %s %s',str , body);
   var name = body['application']['value']['name'];
@@ -29,7 +32,7 @@ exports.createApp = function(body) {
       Helm.installRelease(helmName,version,namespace,releasename);
 
   }
- 
+  DimAppice.create(workspace,namespace,services);
     
   return namespace;
 }
