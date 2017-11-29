@@ -340,7 +340,11 @@ definitions:
   ServiceStatus:
     allOf:
     - $ref: "#/definitions/Service"
-    - {}
+    properties:
+      urls:
+        type: "array"
+        items:
+          $ref: "#/definitions/NamedLink"
   NamedLink:
     type: "object"
     required:

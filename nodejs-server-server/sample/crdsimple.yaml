@@ -1,0 +1,11 @@
+apiVersion: 'dimidium.enablecloud.github.com/v1'
+kind: 'DimApplication'
+metadata: 
+    name: 'traider-trainertrading'
+    labels: 
+      worspace: workspace
+      application: name
+spec: 
+  workspace: 'Traider'
+  
+    

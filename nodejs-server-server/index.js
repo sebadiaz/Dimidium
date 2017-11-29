@@ -16,6 +16,19 @@ var options = {
   useStubs: process.env.NODE_ENV === 'development' // Conditionally turn on stubs (mock mode)
 };
 
+var myArgs = process.argv.slice(2);
+console.log('myArgs: ', myArgs);
+
+switch (myArgs[0]) {
+  case 'debug':
+    console.log( 'Debug mode.');
+    require('request').debug = true
+    break;
+  default:
+    
+}
+
+
 // The Swagger document (require it, build it programmatically, fetch it from a URL, ...)
 var spec = fs.readFileSync(path.join(__dirname,'api/swagger.yaml'), 'utf8');
 var swaggerDoc = jsyaml.safeLoad(spec);

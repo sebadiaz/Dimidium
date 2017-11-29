@@ -36,6 +36,7 @@ exports.deleteApp = function(args, res, next) {
    * appId String ID of the app to update
    * no response value expected for this operation
    **/
+  var id=Application.deleteApp(args);
   res.end();
 }
 
@@ -60,7 +61,9 @@ exports.getApp = function(args, res, next) {
    * appId String ID of the app to update
    * returns ApplicationStatus
    **/
-  var examples = {};
+  res.setHeader('Content-Type', 'application/json');
+  Application.getApp(args,res);
+  /**var examples = {};
   examples['application/json'] = {
   "name" : "Trainer Trading",
   "id" : "Application id",
@@ -72,6 +75,7 @@ exports.getApp = function(args, res, next) {
   } else {
     res.end();
   }
+  */
 }
 
 exports.getAppServiceStatus = function(args, res, next) {

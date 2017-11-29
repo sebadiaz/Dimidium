@@ -2,18 +2,18 @@
 'use strict';
 
 const Api = require('kubernetes-client');
-exports.getCore = function() {
-    
-    var core;
+exports.getCore = function(promise) {
+    var options;
     try {
-        core = new Api.Core(Api.config.getInCluster());
+        options = Api.config.getInCluster();
     }
     catch(err) {
-        core = new Api.Core(Api.config.fromKubeconfig());
+        options = Api.config.fromKubeconfig();
     }
-    var str = JSON.stringify(core);
-    //console.log('ConfigPath %s',str)
-    return core;
+    if (promise){
+        options['promises']=true;    
+    }
+    return new Api.Core(options);
 }
 
 exports.getExt = function() {
@@ -36,4 +36,19 @@ exports.getCRD = function() {
         core = new Api.ApiExtensions(Api.config.fromKubeconfig());
     }
     return core;
+}
+
+exports.getCustomResource = function(group,promise) {
+    var options;
+    try {
+        options = Api.config.getInCluster();
+    }
+    catch(err) {
+        options = Api.config.fromKubeconfig();
+    }
+    if (promise){
+        options['promises']=true;    
+    }
+    options['group']=group;
+    return new Api.CustomResourceDefinitions(options);
 }
