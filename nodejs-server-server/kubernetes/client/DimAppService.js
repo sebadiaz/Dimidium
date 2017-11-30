@@ -57,8 +57,9 @@ exports.create = function(workspace,name,components) {
   for (var i = 0; i < arrayLength; i++) {
       var helmname=components[i]['name'];
       var version=components[i]['version'];
+      var deployname=components[i]['deployname'];
       var releasename=components[i]['releasename'];
-      manifest['spec']['components']['items'].push({helmname:helmname,helmversion:version,releasename:releasename});
+      manifest['spec']['components']['items'].push({helmname:helmname,deployname:deployname,helmversion:version,releasename:releasename});
 
   }
   var custom=ApiService.getCustomResource("dimidium.enablecloud.github.com");
@@ -102,5 +103,26 @@ exports.delete = function(namespace) {
   custom.addResource('dimapps');
   const res = custom.ns.dimapps.delete({ name: namespace }, print);
 
+  
+}
+
+
+exports.patch = function(appId,manifest) {
+  var custom=ApiService.getCustomResource("dimidium.enablecloud.github.com");
+  
+  console.log("Add resource "+JSON.stringify(manifest));
+  custom.addResource('dimapps');
+  custom.ns.dimapps(appId).patch({ body: manifest },  print);
+  
+  
+}
+
+exports.update = function(appId,manifest) {
+  var custom=ApiService.getCustomResource("dimidium.enablecloud.github.com");
+  
+  console.log("Add resource "+JSON.stringify(manifest));
+  custom.addResource('dimapps');
+  custom.ns.dimapps(appId).put({ body: manifest },  print);
+  
   
 }

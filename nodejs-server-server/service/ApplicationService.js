@@ -24,7 +24,11 @@ const createAppComp = function(name,workspace,services) {
     for (var i = 0; i < arrayLength; i++) {
         var helmName=services[i]['name'];
         var version=services[i]['version'];
-        var releasename=namespace+"-"+helmName.replace('/', '-');
+        var deployname = services[i]['deployname'];
+        if(!deployname){
+            deployname=helmName;
+        }
+        var releasename=namespace+"-"+deployname.replace('/', '-');
         services[i]['releasename']=releasename;
         Helm.installRelease(helmName,version,namespace,releasename);
   
@@ -137,7 +141,7 @@ exports.deleteApp = function(body) {
     var response=
     {
       "id": body['metadata']['name'],
-      "worspace": body['metadata']['labels']['workspace'],
+      "workspace": body['metadata']['labels']['workspace'],
       "name": body['metadata']['name'],
       "services": [
         
@@ -148,11 +152,12 @@ exports.deleteApp = function(body) {
     for (var i = 0; i < arrayLength; i++) {
         var releasename=items[i]['releasename'];
         var helmname=items[i]['helmname'];
+        var deployname=items[i]['deployname'];
         var helmversion=items[i]['helmversion'];
         if(helmversion){
-          response["services"].push({id:releasename,name:helmname,version:helmversion});
+          response["services"].push({id:releasename,deployname:deployname,name:helmname,version:helmversion});
         }else{
-          response["services"].push({id:releasename,name:helmname});
+          response["services"].push({id:releasename,deployname:deployname,name:helmname});
         }
        
     }
@@ -238,6 +243,61 @@ exports.deleteApp = function(body) {
     var workspace = body['application']['value']['workspace'];
     var fileName = "static/templates.json";
     File.loadFile(fileName,data=>{loadTemplate(data,name,deployname,workspace,res);},()=>{res.end();})
+    
+  }
+
+  const pushHelm = function(body,res) {
+    var str = JSON.stringify(body);
+    console.log('pushHelm %s %s',str , body);
+    if(body['code']){
+        res['res'].statusCode=body['code'];
+        res['res'].end();
+        return;
+    }
+    var appname=body['metadata']['name'];
+    var workspace=body['metadata']['labels']['workspace'];
+    var namespace=body['metadata']['labels']['namespace'];
+    console.log('pushHelm %s %s',str , body);
+    var helmname=res['name'];
+    var deployname=res['deployname'];
+    var version=res['version'];
+    console.log('pushHelm %s %s %s %s %s %s',appname , workspace,namespace,helmname,deployname,version);
+    if(!deployname){
+        deployname=helmname;
+    }
+    var releasename=namespace+"-"+deployname.replace('/', '-');
+    //add helm
+    Helm.installRelease(helmname,version,namespace,releasename);
+
+    //update DiminiumApp
+    if(!body['spec']['components']['items']){
+        body['spec']['components']['items']=[];
+    }
+    body['spec']['components']['items'].push({helmname:helmname,deployname:deployname,helmversion:version,releasename:releasename});
+    var newBody={spec:{components:{items:[{helmname:helmname,deployname:deployname,helmversion:version,releasename:releasename}]}}};
+    
+   // DimAppice.delete(appname);
+    //DimAppice.delete(appname);
+    str = JSON.stringify(newBody);
+    console.log('pushHelm %s %s',str , newBody);
+    DimAppice.update(appname,body);
+  }
+  
+  exports.addServiceApp = function(body,res) {
+    
+    var str = JSON.stringify(body);
+    console.log('body %s %s',str , body);
+    var appId = body['appId'].value;
+    var resour=[];
+    resour['name'] = body['service']['value']['name'];
+    resour['deployname'] = body['service']['value']['deployname'];
+    resour['version'] = body['service']['value']['version'];
+    resour['res']=res;
+    //Load dim
+    DimAppice.get(appId,pushHelm,resour);
+    //add helm
+  
+
     
   }
 

@@ -3,7 +3,7 @@ kind: 'DimApplication'
 metadata: 
     name: 'traider-trainertrading'
     labels: 
-      worspace: workspace
+      workspace: workspace
       application: name
 spec: 
   workspace: 'Traider'

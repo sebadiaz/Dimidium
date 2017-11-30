@@ -3,14 +3,7 @@
 var Application = require('../service/ApplicationService');
 
 exports.addServiceApp = function(args, res, next) {
-  /**
-   * Add a service
-   * 
-   *
-   * appId String ID of the app to update
-   * service ServiceName The service to add. (optional)
-   * no response value expected for this operation
-   **/
+  var id=Application.addServiceApp(args);
   res.end();
 }
 
