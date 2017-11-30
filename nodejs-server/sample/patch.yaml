@@ -1,0 +1,3 @@
+{"spec":{"components":{"items":[{"helmname":"ffdc-raas/misysboard","deployname":"black","releasename":"sample-sample-raas-demo-2-black"}]}}}
+
+kubectl patch dimapps sample-sample-raas-demo-2 -p '{"kind":"DimApplication","spec":{"components":{"items":[{"helmname":"ffdc-raas/misysboard","deployname":"black","releasename":"sample-sample-raas-demo-2-black"}]}}}'
