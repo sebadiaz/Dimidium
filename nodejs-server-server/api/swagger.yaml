@@ -31,10 +31,10 @@ paths:
         405:
           description: "Invalid input"
       x-swagger-router-controller: "Service"
-  /application/template:
+  /template:
     get:
       tags:
-      - "application template"
+      - "template"
       summary: "Retrieve the applications templates"
       description: "Should include "
       operationId: "listApp"
@@ -53,6 +53,32 @@ paths:
         405:
           description: "Invalid input"
       x-swagger-router-controller: "ApplicationTemplate"
+  /application/template:
+    post:
+      tags:
+      - "application"
+      summary: "Create an application from a template"
+      description: "Should include "
+      operationId: "createAppTemplate"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "application"
+        description: "The application template to create."
+        required: false
+        schema:
+          $ref: "#/definitions/TemplateName"
+      responses:
+        200:
+          description: "Application Id."
+          schema:
+            type: string
+        405:
+          description: "Invalid input"
+      x-swagger-router-controller: "Application"
   /application:
     get:
       tags:
@@ -317,6 +343,10 @@ definitions:
         type: "array"
         items:
           $ref: "#/definitions/ServiceStatus"
+      urls:
+        type: "array"
+        items:
+          $ref: "#/definitions/NamedLink"
   Service:
     type: "object"
     required:
@@ -336,15 +366,15 @@ definitions:
   ServiceDesc:
     allOf:
     - $ref: "#/definitions/Service"
-    - {}
+    properties:
+      description:
+        type: "string"
+        example: "reporting"
+        description: "The description of the service."
   ServiceStatus:
     allOf:
     - $ref: "#/definitions/Service"
-    properties:
-      urls:
-        type: "array"
-        items:
-          $ref: "#/definitions/NamedLink"
+  
   NamedLink:
     type: "object"
     required:
@@ -370,3 +400,23 @@ definitions:
       version:
         type: "string"
         description: "Version of the service."
+  TemplateName:
+    type: "object"
+    required:
+    - "templatename"
+    - "deployname"
+    - "workspace"
+    properties:
+      templatename:
+        type: "string"
+        example: "ffdc-raas"
+        description: "The name of the template."
+      deployname:
+        type: "string"
+        example: "ffdc-raas"
+        description: "The name of the deployment."
+      workspace:
+        type: "string"
+        example: "sample"
+        description: "Workspace where the template will be deployed."
+

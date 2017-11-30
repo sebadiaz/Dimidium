@@ -12,6 +12,10 @@ module.exports.createApp = function createApp (req, res, next) {
   Application.createApp(req.swagger.params, res, next);
 };
 
+module.exports.createAppTemplate = function createApp (req, res, next) {
+  Application.createAppTemplate(req.swagger.params, res, next);
+};
+
 module.exports.deleteApp = function deleteApp (req, res, next) {
   Application.deleteApp(req.swagger.params, res, next);
 };

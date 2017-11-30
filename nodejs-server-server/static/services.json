@@ -1,0 +1,10 @@
+[
+    {
+      "name": "ffdc-raas/reporting",
+      "description":"Reporting Backend for RAAS platform."
+    },{
+        "name": "ffdc-raas/misysboard",
+        "description":"UI for RAAS platform"
+      }
+
+  ]

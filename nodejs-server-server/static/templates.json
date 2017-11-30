@@ -1,0 +1,17 @@
+[
+  {
+    "workspace": "Traider",
+    "name": "raas-demo",
+    "description":"Raas Demo !",
+    "services": [
+      {
+        "name": "ffdc-raas/reporting"
+      },
+      {
+        "name": "ffdc-raas/misysboard"
+      }
+
+    ]
+  }
+]
+

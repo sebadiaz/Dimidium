@@ -28,6 +28,22 @@ exports.createApp = function(args, res, next) {
   //res.end();
 }
 
+exports.createAppTemplate = function(args, res, next) {
+  /**
+   * Create an application
+   * Should include 
+   *
+   * application ApplicationCreation The application to create. (optional)
+   * no response value expected for this operation
+   **/
+  res.setHeader('Content-Type', 'application/json');
+  Application.createAppTemplate(args,res);
+  
+
+  //res.end();
+}
+
+
 exports.deleteApp = function(args, res, next) {
   /**
    * Delete an application
@@ -122,6 +138,9 @@ exports.listApp = function(args, res, next) {
    *
    * returns List
    **/
+  res.setHeader('Content-Type', 'application/json');
+  Application.listApp(args,res);
+  /*
   var examples = {};
   examples['application/json'] = [ {
   "name" : "Trainer Trading",
@@ -133,7 +152,7 @@ exports.listApp = function(args, res, next) {
     res.end(JSON.stringify(examples[Object.keys(examples)[0]] || {}, null, 2));
   } else {
     res.end();
-  }
+  }*/
 }
 
 exports.updateApp = function(args, res, next) {

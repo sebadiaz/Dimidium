@@ -27,3 +27,9 @@ exports.deleteRelease = function(releasename) {
   exec('helm delete --purge '+releasename,print);
   
 }
+
+
+exports.listRelease = function(releasename) {
+  exec('helm list',print);
+  
+}

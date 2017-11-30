@@ -1,12 +1,14 @@
 'use strict';
 
+var Template = require('../service/TemplateService');
+
 exports.listApp = function(args, res, next) {
   /**
    * Retrieve the applications templates
    * Should include 
    *
    * returns List
-   **/
+   *
   var examples = {};
   examples['application/json'] = [ {
   "name" : "Trainer Trading",
@@ -21,6 +23,8 @@ exports.listApp = function(args, res, next) {
     res.end(JSON.stringify(examples[Object.keys(examples)[0]] || {}, null, 2));
   } else {
     res.end();
-  }
+  }*/
+
+  Template.listTemplate(args, res);
 }
 
