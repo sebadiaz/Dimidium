@@ -6,6 +6,28 @@ function print(err, result) {
 }
 
 
+const getPath= function () {
+  var path = ".";
+
+  console.log('body %s ',process.argv );
+  console.log('body %s ',process.argv.indexOf("--helmpath") );
+  if(process.argv.indexOf("--helmpath") != -1){ //does our flag exist?
+    console.log('body %s ',process.argv.indexOf("--helmpath") );
+    path = process.argv[process.argv.indexOf("--helmpath") + 1]; //grab the next item
+  }
+
+  return path;
+}
+
+const getHelmPath= function () {
+  var path =getPath();
+  if(path){
+    return 'cd "'+path+'";helm' 
+  }
+  return 'helm' 
+}
+
+
 /**
  * Add a new pet to the store
  * 
@@ -15,9 +37,9 @@ function print(err, result) {
  * InstallRelease(release string, version string, namespace string, releasename string,
  **/
 exports.installRelease = function(release,version,namespace,releasename) {
-  var cmd='helm install '+release+' --version '+version+' -n '+releasename+' --namespace '+namespace;
+  var cmd=getHelmPath()+' install '+release+' --version '+version+' -n '+releasename+' --namespace '+namespace;
   if (!version || version == "" ){
-    cmd='helm install '+release+' -n '+releasename+' --namespace '+namespace;
+    cmd=getHelmPath()+' install '+release+' -n '+releasename+' --namespace '+namespace;
   }
   exec(cmd,print);
   

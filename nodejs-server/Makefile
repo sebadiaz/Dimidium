@@ -15,7 +15,7 @@ build:
 	@echo "$(GOPATH)"
 	CGO_ENABLED=0 GOOS=linux npm install update rebuild
 image:
-	docker build -t enablecloud/dimidium:alpha -f Dockerfile .
+	docker build -t ffdcdevuksouth.azurecr.io/ffdc/dimidium:alpha -f Dockerfile .
 
 alpha: image
 	@echo "++ Pushing keel alpha"	
