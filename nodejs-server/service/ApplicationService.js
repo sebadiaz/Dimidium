@@ -6,6 +6,8 @@ var ConfigMap = require('../kubernetes/client/ConfigMapService');
 var Service = require('../kubernetes/client/ServicesService');
 var File = require('../tools/LoadFile');
 var Helm = require('../kubernetes/helm/HelmService');
+var UpdateDNSJob = require('../jobs/UpdateDNSJob');
+
 /**
  * Add a new pet to the store
  * 
@@ -14,6 +16,15 @@ var Helm = require('../kubernetes/helm/HelmService');
  * no response value expected for this operation
  **/
 
+const deployByAnnotation= function () {
+    var path = false;
+    if(process.argv.indexOf("--annotation-dns") != -1){ //does our flag exist?
+      return true;
+    }
+  
+    return path;
+  }
+
 const createAppComp = function(name,workspace,services) {
     DimAppice.createDefinition();
     var namespace = workspace+"-"+name;
@@ -21,17 +32,21 @@ const createAppComp = function(name,workspace,services) {
     //Create service
     Namespace.createNamespace(namespace,workspace);
     //Create configMap
-    ConfigMap.createConfigMap(namespace,workspace,'dimidium-links');
+    
     var base_url="default";
     if(process.argv.indexOf("--base-url") != -1){ //does our flag exist?
         base_url = process.argv[process.argv.indexOf("--base-url") + 1]; //grab the next item
+        console.log('Use base url %s',base_url);
     }
-    ConfigMap.patchConfigMap('dimidium-links',namespace,"DIMIDIUM_START_DATE",new Date().toISOString());
-    ConfigMap.patchConfigMap('dimidium-links',namespace,"DIMIDIUM_BASE_URL",base_url);
-    ConfigMap.patchConfigMap('dimidium-links',namespace,"DIMIDIUM_WORKSPACE",workspace);
-    ConfigMap.patchConfigMap('dimidium-links',namespace,"DIMIDIUM_APP_NAME",name);
-    ConfigMap.patchConfigMap('dimidium-links',namespace,"DIMIDIUM_NAMESPACE",namespace);
-    ConfigMap.patchConfigMap('dimidium-links',namespace,"DIMIDIUM_APP_BASE_URL",name+"-"+workspace+"-"+base_url);
+    var dataMap={};
+    dataMap["DIMIDIUM_START_DATE"]=new Date().toISOString();
+    dataMap["DIMIDIUM_BASE_URL"]=base_url;
+    dataMap["DIMIDIUM_WORKSPACE"]=workspace;
+    dataMap["DIMIDIUM_APP_NAME"]=name;
+    dataMap["DIMIDIUM_NAMESPACE"]=namespace;
+    dataMap["DIMIDIUM_APP_BASE_URL"]=name+"-"+workspace+"."+base_url;
+    ConfigMap.createConfigMap(namespace,workspace,'dimidium-config',dataMap);
+    var keysSet="DIMIDIUM_APP_BASE_URL="+dataMap["DIMIDIUM_APP_BASE_URL"]+",DIMIDIUM_WORKSPACE="+workspace+",DIMIDIUM_APP_NAME="+name+",DIMIDIUM_NAMESPACE="+namespace;
     //Install Service
     var arrayLength = services.length;
     for (var i = 0; i < arrayLength; i++) {
@@ -43,8 +58,12 @@ const createAppComp = function(name,workspace,services) {
         }
         var releasename=namespace+"-"+deployname.replace('/', '-');
         services[i]['releasename']=releasename;
-        Helm.installRelease(helmName,version,namespace,releasename);
+        Helm.installRelease(helmName,version,namespace,releasename,keysSet);
   
+    }
+    // Follow Service creation and Add path on DNS when requested
+    if(deployByAnnotation()){
+        UpdateDNSJob.manageService(namespace,dataMap["DIMIDIUM_APP_BASE_URL"]);
     }
     DimAppice.create(workspace,namespace,services);
       
@@ -70,9 +89,12 @@ const deleteDimObj = function(body) {
         console.log('DELETE    %s ',releasename);
         Helm.deleteRelease(releasename);
     }
+    console.log('delete namespace %s',namespace);
     Namespace.deleteNamespace(namespace);
     //delete configMap
-    ConfigMap.delete('dimidium-links',namespace);
+    console.log('delete ConfigMap %s',namespace);
+    ConfigMap.deleteConfigMap('dimidium-links',namespace);
+    console.log('delete DimAppice %s',namespace);
     DimAppice.delete(namespace);
 }
 exports.deleteApp = function(body) {

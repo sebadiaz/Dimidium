@@ -5,6 +5,9 @@
     },{
         "name": "ffdc-raas/uxp",
         "description":"UXP for RAAS platform."
+      },{
+        "name": "ffdc-raas/sdc",
+        "description":"StreamSets for RAAS platform."
       }
 
   ]

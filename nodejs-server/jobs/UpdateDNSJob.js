@@ -1,34 +1,68 @@
 
-var Queue = require('bull');
 var Service = require('../kubernetes/client/ServicesService');
-var redisurl=undefined;
-if(process.argv.indexOf("--redis-url") != -1){ //does our flag exist?
-    redisurl = process.argv[process.argv.indexOf("--redis-url") + 1]; //grab the next item
-  }
 
-var serviceQueue = new Queue("ServiceQueue");
-if (redisurl){
-    serviceQueue = new Queue('ServiceQueue', redisurl);
+var kue = require('kue')
+var queue= {};
+if(process.argv.indexOf("--annotation-dns") != -1){
+    iol , queue = kue.createQueue();
+    queue.process('service', processLoop);
 }
 
-const processServiceObj = function(body,res){
-    
-}
 
-serviceQueue.process(function(job, done){
-    console.log("Job Received namespace", job.data.namespace);
-    job.progress(1);
-    Service.getServices(job.data.namespace,getMergedDimObj,null);
+const processLoop = function(job, done){
+    console.log("Job Received namespace");
+    Service.getServices(job.data.namespace,processServiceObj,job.data);
     // call done when finished
     done();
-  
+}
 
-});
-exports.manageService = function(namespace) {
-    var data={namespace:namespace};
+
+
+
+const processServiceObj = function(body,res){
+    var str = JSON.stringify(body);
+    console.log("Job Received namespace", str);
+    var items = body['items'];
+
+
+    var arrayLength = items.length;
+    for (var i = 0; i < arrayLength; i++) {
+          var name=items[i]['metadata']['name'];
+          var namespace=items[i]['metadata']['namespace'];
+          var labels=items[i]['metadata']['labels'];
+          var annotations=items[i]['metadata']['annotations'];
+          var base_dns=annotations['external-dns.dimidium/name'];
+          console.log("Found dns on ", name);
+          if(base_dns){
+            console.log("Found dns on ", name);
+            Service.patchAnnotation(namespace,name,"external-dns.alpha.kubernetes.io/hostname",base_dns+"-"+res.appUrl);
+          }
+    }
+}
+
+
+
+var minute = 60000;
+var second = 1000;
+exports.manageService = function(namespace,appUrl) {
+    console.log("Add service queue", namespace);
+    var data={namespace:namespace,appUrl:appUrl};
+
+
+      
+
     //job now
-    serviceQueue.add(data);
+    console.log("Add service queue", data);
+    queue.create( 'service', data ).delay( second * 20 )
+    .priority( 'high' )
+    .save();
+
     //job every minute 
-    serviceQueue.add(data, {repeat: {cron: '* * * * *'}});
+    console.log("Add service queue repeat", data);
+//    serviceQueue.add(data, {repeat: {cron: '* * * * *'}});
+    console.log("End", data);
   }
+
+
+
 

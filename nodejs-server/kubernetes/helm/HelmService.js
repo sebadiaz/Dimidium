@@ -32,10 +32,10 @@ const getHelmPath= function () {
  * no response value expected for this operation
  * InstallRelease(release string, version string, namespace string, releasename string,
  **/
-exports.installRelease = function(release,version,namespace,releasename) {
-  var cmd=getHelmPath()+' install '+release+' --version '+version+' -n '+releasename+' --namespace '+namespace;
+exports.installRelease = function(release,version,namespace,releasename,keys) {
+  var cmd=getHelmPath()+' install '+release+' --version '+version+' -n '+releasename+' --namespace '+namespace + ' --set '+keys;
   if (!version || version == "" ){
-    cmd=getHelmPath()+' install '+release+' -n '+releasename+' --namespace '+namespace;
+    cmd=getHelmPath()+' install '+release+' -n '+releasename+' --namespace '+namespace+ ' --set '+keys;
   }
   exec(cmd,print);
   

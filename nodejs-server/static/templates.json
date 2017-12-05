@@ -9,6 +9,10 @@
       },
       {
         "name": "ffdc-raas/uxp"
+      },
+      {
+        "name": "ffdc-raas/streamsets",
+        "description": "Streamsets"
       }
 
     ]
