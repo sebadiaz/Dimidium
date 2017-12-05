@@ -8,11 +8,7 @@ function print(err, result) {
 
 const getPath= function () {
   var path = ".";
-
-  console.log('body %s ',process.argv );
-  console.log('body %s ',process.argv.indexOf("--helmpath") );
   if(process.argv.indexOf("--helmpath") != -1){ //does our flag exist?
-    console.log('body %s ',process.argv.indexOf("--helmpath") );
     path = process.argv[process.argv.indexOf("--helmpath") + 1]; //grab the next item
   }
 

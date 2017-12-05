@@ -294,7 +294,7 @@ definitions:
         description: "The name of the service."
       deployname:
         type: "string"
-        example: "reporting"
+        example: "ffdc-raas/reporting"
         description: "The name of the service."
       version:
         type: "string"

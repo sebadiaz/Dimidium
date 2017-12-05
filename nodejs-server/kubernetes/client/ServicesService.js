@@ -12,3 +12,12 @@ exports.getServices = function(namespace,callback,options) {
   core.namespaces(namespace).services.get().then(result => {callback(result,options);});
   
 }
+
+exports.patchAnnotation = function(namespace,name,key,value) {
+  console.log('get services namespace %s',namespace );
+  var core=ApiService.getCore(true);
+  var data= {metadata:{annotations:{}}};
+  data['metadata']['annotations'][key]=value;
+  core.namespaces(namespace).services(name).patch(data,print);
+  
+}

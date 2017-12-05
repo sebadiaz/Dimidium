@@ -2,6 +2,7 @@
 'use strict';
 var DimAppice = require('../kubernetes/client/DimAppService');
 var Namespace = require('../kubernetes/client/NamespaceService');
+var ConfigMap = require('../kubernetes/client/ConfigMapService');
 var Service = require('../kubernetes/client/ServicesService');
 var File = require('../tools/LoadFile');
 var Helm = require('../kubernetes/helm/HelmService');
@@ -19,6 +20,18 @@ const createAppComp = function(name,workspace,services) {
     namespace=namespace.toLowerCase();
     //Create service
     Namespace.createNamespace(namespace,workspace);
+    //Create configMap
+    ConfigMap.createConfigMap(namespace,workspace,'dimidium-links');
+    var base_url="default";
+    if(process.argv.indexOf("--base-url") != -1){ //does our flag exist?
+        base_url = process.argv[process.argv.indexOf("--base-url") + 1]; //grab the next item
+    }
+    ConfigMap.patchConfigMap('dimidium-links',namespace,"DIMIDIUM_START_DATE",new Date().toISOString());
+    ConfigMap.patchConfigMap('dimidium-links',namespace,"DIMIDIUM_BASE_URL",base_url);
+    ConfigMap.patchConfigMap('dimidium-links',namespace,"DIMIDIUM_WORKSPACE",workspace);
+    ConfigMap.patchConfigMap('dimidium-links',namespace,"DIMIDIUM_APP_NAME",name);
+    ConfigMap.patchConfigMap('dimidium-links',namespace,"DIMIDIUM_NAMESPACE",namespace);
+    ConfigMap.patchConfigMap('dimidium-links',namespace,"DIMIDIUM_APP_BASE_URL",name+"-"+workspace+"-"+base_url);
     //Install Service
     var arrayLength = services.length;
     for (var i = 0; i < arrayLength; i++) {
@@ -43,30 +56,7 @@ exports.createApp = function(body) {
     var workspace = body['application']['value']['workspace'];
     var services = body['application']['value']['services'];
     var namespace=createAppComp(name,workspace,services);
-    /** 
-  DimAppice.createDefinition();
- 
-  var str = JSON.stringify(body);
-  console.log('body %s %s',str , body);
-  var name = body['application']['value']['name'];
-  var workspace = body['application']['value']['workspace'];
-  var services = body['application']['value']['services'];
-  var namespace = workspace+"-"+name;
-  namespace=namespace.toLowerCase();
-  //Create service
-  Namespace.createNamespace(namespace,workspace);
-  //Install Service
-  var arrayLength = services.length;
-  for (var i = 0; i < arrayLength; i++) {
-      var helmName=services[i]['name'];
-      var version=services[i]['version'];
-      var releasename=namespace+"-"+helmName.replace('/', '-');
-      services[i]['releasename']=releasename;
-      Helm.installRelease(helmName,version,namespace,releasename);
 
-  }
-  DimAppice.create(workspace,namespace,services);
-    */
   return namespace;
 }
 const deleteDimObj = function(body) {
@@ -81,6 +71,8 @@ const deleteDimObj = function(body) {
         Helm.deleteRelease(releasename);
     }
     Namespace.deleteNamespace(namespace);
+    //delete configMap
+    ConfigMap.delete('dimidium-links',namespace);
     DimAppice.delete(namespace);
 }
 exports.deleteApp = function(body) {
@@ -104,6 +96,7 @@ exports.deleteApp = function(body) {
     for (var i = 0; i < arrayLength; i++) {
           var name=items[i]['metadata']['name'];
           var labels=items[i]['metadata']['labels'];
+          var annotations=items[i]['metadata']['annotations'];
           var release=undefined;
           if (labels&&items[i]['status']['loadBalancer']&&items[i]['spec']['type']=="LoadBalancer"){
 
@@ -120,11 +113,19 @@ exports.deleteApp = function(body) {
                 for (var k = 0; k < arrayLengthThird; k++) {
                     var arrayLengthFourth = items[i]['spec']['ports'].length;
                     var ip=items[i]['status']['loadBalancer']["ingress"][k]['ip'];
+                    var namedns="";
+                    if(annotations){
+                        namedns=annotations['external-dns.alpha.kubernetes.io/hostname'];
+                    }
                     for (var l = 0; l < arrayLengthFourth; l++) {
                         if(items[i]['spec']['ports'][l]['port']){
-                            var urlFinal=ip+":"+items[i]['spec']['ports'][l]['port'];
+                            var port=items[i]['spec']['ports'][l]['port'];
+                            var urlFinal=ip+":"+port;
+                            if(namedns){
+                                urlFinal=namedns+":"+port;
+                            }
                             var nameCon=items[i]['spec']['ports'][l]['name'];
-                            result['urls'].push({name:name,'url':urlFinal,'portname':nameCon});
+                            result['urls'].push({name:name,'url':urlFinal,'portname':nameCon,port:port,ip:ip});
                         }
                     }
                 }

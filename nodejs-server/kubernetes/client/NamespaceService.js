@@ -9,7 +9,7 @@ exports.createNamespace = function(namespace,workspace) {
   console.log('Create namespace %s on workspace %s',namespace , workspace);
   var core=ApiService.getCore();
   //
-  var toPost={'body': {'apiVersion': 'v1','kind': 'Namespace','metadata': {'name': namespace }}};
+  var toPost={'body': {'apiVersion': 'v1','kind': 'Namespace','metadata': {'name': namespace ,'labels':{workspace:workspace}}}};
   core.namespaces.post(toPost, print);
   
 }
