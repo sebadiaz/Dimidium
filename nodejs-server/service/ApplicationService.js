@@ -4,6 +4,7 @@ var DimAppice = require('../kubernetes/client/DimAppService');
 var Namespace = require('../kubernetes/client/NamespaceService');
 var ConfigMap = require('../kubernetes/client/ConfigMapService');
 var Service = require('../kubernetes/client/ServicesService');
+var Ingress = require('../kubernetes/client/IngressService');
 var File = require('../tools/LoadFile');
 var Helm = require('../kubernetes/helm/HelmService');
 var UpdateDNSJob = require('../jobs/UpdateDNSJob');
@@ -38,6 +39,11 @@ const createAppComp = function(name,workspace,services) {
         base_url = process.argv[process.argv.indexOf("--base-url") + 1]; //grab the next item
         console.log('Use base url %s',base_url);
     }
+    var cname_url="default";
+    if(process.argv.indexOf("--cname-url") != -1){ //does our flag exist?
+        cname_url = process.argv[process.argv.indexOf("--cname-url") + 1]; //grab the next item
+        console.log('Use base url %s',base_url);
+    }
     var dataMap={};
     dataMap["DIMIDIUM_START_DATE"]=new Date().toISOString();
     dataMap["DIMIDIUM_BASE_URL"]=base_url;
@@ -45,8 +51,9 @@ const createAppComp = function(name,workspace,services) {
     dataMap["DIMIDIUM_APP_NAME"]=name;
     dataMap["DIMIDIUM_NAMESPACE"]=namespace;
     dataMap["DIMIDIUM_APP_BASE_URL"]=name+"-"+workspace+"."+base_url;
+    dataMap["DIMIDIUM_CNAME_TARGET"]=cname_url;
     ConfigMap.createConfigMap(namespace,workspace,'dimidium-config',dataMap);
-    var keysSet="DIMIDIUM_APP_BASE_URL="+dataMap["DIMIDIUM_APP_BASE_URL"]+",DIMIDIUM_WORKSPACE="+workspace+",DIMIDIUM_APP_NAME="+name+",DIMIDIUM_NAMESPACE="+namespace;
+    var keysSet="DIMIDIUM_CNAME_TARGET="+cname_url+",DIMIDIUM_APP_BASE_URL="+dataMap["DIMIDIUM_APP_BASE_URL"]+",DIMIDIUM_WORKSPACE="+workspace+",DIMIDIUM_APP_NAME="+name+",DIMIDIUM_NAMESPACE="+namespace;
     //Install Service
     var arrayLength = services.length;
     for (var i = 0; i < arrayLength; i++) {
@@ -109,8 +116,45 @@ exports.deleteApp = function(body) {
     return appId;
   }
 
-  const getMergedDimObj = function(body,res) {
+
+const getMergedIngressesObj = function(body,res) {
+    var result = res.body;
     var str = JSON.stringify(body);
+    console.log('body dim %s %s',str , body);
+    try {  
+    var items = body['items'];
+    var arrayLength = items.length;
+    for (var i = 0; i < arrayLength; i++) {
+          var name=items[i]['metadata']['name'];
+          var creationTimestamp=items[i]['metadata']['creationTimestamp'];
+          var labels=items[i]['labels'];
+          var spec=items[i]['spec'];
+          var status=items[i]['status'];
+          var type="http";
+          if(labels&&labels['type']){
+              type=labels['type'];
+          }
+          var rules=spec['rules'];
+          var arrayrules = rules.length;
+          for (var j = 0; j < arrayrules; j++) {
+            var host=rules[j]['host'];
+            if(!result['urls']){
+                result['urls']=[];
+            }
+            result['urls'].push({creationTimestamp:creationTimestamp,name:name,'url':host,'type':type});
+          }
+
+
+    }
+} catch (e) {
+    console.error(e);
+  }
+    res['res'].end(JSON.stringify(result));
+}
+
+const getMergedDimObj = function(body,res) {
+    var str = JSON.stringify(body);
+    console.log('body dim %s %s',str , body);
     var items = body['items'];
     var result = res.body;
 
@@ -127,37 +171,48 @@ exports.deleteApp = function(body) {
                 name=labels['linkname'];
             }
             if(!result['urls']){
+             
                 result['urls']=[];
             }
-            if(items[i]['status']['loadBalancer']["ingress"])
-            {
-                var arrayLengthThird = items[i]['status']['loadBalancer']["ingress"].length;
-                for (var k = 0; k < arrayLengthThird; k++) {
-                    var arrayLengthFourth = items[i]['spec']['ports'].length;
-                    var ip=items[i]['status']['loadBalancer']["ingress"][k]['ip'];
-                    var namedns="";
+            var arrayLengthFourth = items[i]['spec']['ports'].length;
+            for (var l = 0; l < arrayLengthFourth; l++) {
+                if(items[i]['spec']['ports'][l]['port']){
+                    var port=items[i]['spec']['ports'][l]['port'];
+                    var namedns=undefined;
+                    var nameCon=items[i]['spec']['ports'][l]['name'];
                     if(annotations){
                         namedns=annotations['external-dns.alpha.kubernetes.io/hostname'];
                     }
-                    for (var l = 0; l < arrayLengthFourth; l++) {
-                        if(items[i]['spec']['ports'][l]['port']){
-                            var port=items[i]['spec']['ports'][l]['port'];
-                            var urlFinal=ip+":"+port;
-                            if(namedns){
-                                urlFinal=namedns+":"+port;
+                    var urlFinal=namedns+":"+port;
+                    if(items[i]['status']['loadBalancer']["ingress"])
+                    {
+                        var arrayLengthThird = items[i]['status']['loadBalancer']["ingress"].length;
+                        for (var k = 0; k < arrayLengthThird; k++) {
+                            
+                            var ip=items[i]['status']['loadBalancer']["ingress"][k]['ip'];
+                            if(!namedns){
+                                urlFinal=ip+":"+port;
                             }
-                            var nameCon=items[i]['spec']['ports'][l]['name'];
-                            result['urls'].push({name:name,'url':urlFinal,'portname':nameCon,port:port,ip:ip});
+                            
+                            result['urls'].push({creationTimestamp:items[i]['metadata']['creationTimestamp'],ip:ip,name:name,'url':urlFinal,'portname':nameCon,port:port});
+                                
+                        }
+                    }
+                    else{
+                        if(namedns){
+                            result['urls'].push({creationTimestamp:items[i]['metadata']['creationTimestamp'],ip:'pending',name:name,'url':urlFinal,'portname':nameCon,port:port});
+                        }else{
+                            result['urls'].push({creationTimestamp:items[i]['metadata']['creationTimestamp'],ip:'pending',name:name,'url':'pending','portname':nameCon,port:port});
                         }
                     }
                 }
-            }else{
-                result['urls'].push({name:'pending','url':'pending','portname':'pending'});
             }
            
           }
     }
-    res['res'].end(JSON.stringify(result));
+    res[body]=result;
+    Ingress.getIngresses(res.original['metadata']['name'],getMergedIngressesObj,res);
+    //res['res'].end(JSON.stringify(result));
   }
 
   const constructDimObj = function(body) {
@@ -197,7 +252,7 @@ exports.deleteApp = function(body) {
 
     console.log('getDimObj    %s %s',str , body);
       var response=constructDimObj(body);
-      var result={res:res,body:response};
+      var result={res:res,body:response,original:body};
       console.log('getDimObj    %s',result);
       Service.getServices(body['metadata']['name'],getMergedDimObj,result);
   }
