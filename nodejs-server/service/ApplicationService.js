@@ -298,7 +298,7 @@ const getMergedDimObj = function(body,res) {
     for (var i = 0; i < arrayLength; i++) {
         if(items[i]['name']==name){
 
-            namespace=createAppComp(name,workspace,items[i]['services']);
+            namespace=createAppComp(deployname,workspace,items[i]['services']);
         }
     }
     console.log('namespace %s',namespace );
