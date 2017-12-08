@@ -9,5 +9,12 @@
         "name": "ffdc-raas/sdc",
         "description":"StreamSets for RAAS platform."
       }
+      ,{
+        "name": "ffdc-reporting/reporting",
+        "description":"Reporting Backend CI/CD."
+      },{
+          "name": "ffdc-reporting/uxp",
+          "description":"UXP on CI/CD."
+        }
 
   ]

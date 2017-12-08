@@ -1,6 +1,6 @@
 [
   {
-    "workspace": "Traider",
+    "workspace": "traider",
     "name": "raas-demo",
     "description":"Raas Demo !",
     "services": [
@@ -15,6 +15,18 @@
         "description": "Streamsets"
       }
 
+    ]
+  },{
+    "workspace": "traider",
+    "name": "cidd-demo",
+    "description":"CI/CD Demo !",
+    "services": [
+      {
+        "name": "ffdc-reporting/reporting"
+      },
+      {
+        "name": "ffdc-reporting/uxp"
+      }
     ]
   }
 ]
