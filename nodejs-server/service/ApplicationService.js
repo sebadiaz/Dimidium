@@ -28,6 +28,8 @@ const deployByAnnotation= function () {
 
 const createAppComp = function(name,workspace,services) {
     DimAppice.createDefinition();
+    workspace=workspace.toLowerCase();
+    name=name.toLowerCase();
     var namespace = workspace+"-"+name;
     namespace=namespace.toLowerCase();
     //Create service
@@ -59,7 +61,7 @@ const createAppComp = function(name,workspace,services) {
     for (var i = 0; i < arrayLength; i++) {
         var helmName=services[i]['name'];
         var version=services[i]['version'];
-        var deployname = services[i]['deployname'];
+        var deployname = services[i]['deployname'].toLowerCase();
         if(!deployname){
             deployname=helmName;
         }
@@ -230,7 +232,7 @@ const getMergedDimObj = function(body,res) {
     for (var i = 0; i < arrayLength; i++) {
         var releasename=items[i]['releasename'];
         var helmname=items[i]['helmname'];
-        var deployname=items[i]['deployname'];
+        var deployname=items[i]['deployname'].toLowerCase();
         var helmversion=items[i]['helmversion'];
         if(helmversion){
           response["services"].push({id:releasename,deployname:deployname,name:helmname,version:helmversion});
@@ -298,7 +300,7 @@ const getMergedDimObj = function(body,res) {
     for (var i = 0; i < arrayLength; i++) {
         if(items[i]['name']==name){
 
-            namespace=createAppComp(deployname,workspace,items[i]['services']);
+            namespace=createAppComp(deployname.toLowerCase(),workspace,items[i]['services']);
         }
     }
     console.log('namespace %s',namespace );
@@ -317,7 +319,7 @@ const getMergedDimObj = function(body,res) {
     var str = JSON.stringify(body);
     console.log('body %s %s',str , body);
     var name = body['application']['value']['templatename'];
-    var deployname = body['application']['value']['deployname'];
+    var deployname = body['application']['value']['deployname'].toLowerCase();
     var workspace = body['application']['value']['workspace'];
     var fileName = "static/templates.json";
     File.loadFile(fileName,data=>{loadTemplate(data,name,deployname,workspace,res);},()=>{res.end();})
@@ -337,7 +339,7 @@ const getMergedDimObj = function(body,res) {
     var namespace=body['metadata']['labels']['namespace'];
     console.log('pushHelm %s %s',str , body);
     var helmname=res['name'];
-    var deployname=res['deployname'];
+    var deployname=res['deployname'].toLowerCase();
     var version=res['version'];
     console.log('pushHelm %s %s %s %s %s %s',appname , workspace,namespace,helmname,deployname,version);
     if(!deployname){
@@ -368,7 +370,7 @@ const getMergedDimObj = function(body,res) {
     var appId = body['appId'].value;
     var resour=[];
     resour['name'] = body['service']['value']['name'];
-    resour['deployname'] = body['service']['value']['deployname'];
+    resour['deployname'] = body['service']['value']['deployname'].toLowerCase();
     resour['version'] = body['service']['value']['version'];
     resour['res']=res;
     //Load dim
