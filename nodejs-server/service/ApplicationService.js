@@ -67,6 +67,8 @@ const createAppComp = function(name,workspace,services) {
         }
         var releasename=namespace+"-"+deployname.replace('/', '-');
         services[i]['releasename']=releasename;
+        //push charts on local
+        
         Helm.installRelease(helmName,version,namespace,releasename,keysSet);
   
     }
@@ -346,6 +348,8 @@ const getMergedDimObj = function(body,res) {
         deployname=helmname;
     }
     var releasename=namespace+"-"+deployname.replace('/', '-');
+
+    //push charts on local
     //add helm
     Helm.installRelease(helmname,version,namespace,releasename);
 

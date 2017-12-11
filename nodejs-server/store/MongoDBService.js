@@ -135,3 +135,32 @@ exports.pushDocument = function(type,document,callback) {
     
   };
 
+  exports.downloadStream = function(name,callback) {
+    
+    // Connection URL
+    const url = Config.getMongoDbUrl();
+
+    // Database Name
+    const dbName = Config.getMongoDbName();
+
+
+    // Use connect method to connect to the server
+    MongoClient.connect(url, function(err, client) {
+    
+    console.log("Connected successfully to server");
+  
+    const db = client.db(dbName);
+    
+    var downloadStream = bucket.openDownloadStreamByName(name);
+    downloadStream.on('data', function(data) {
+        callback(data);
+      });
+  
+      downloadStream.on('end', function() {
+        client.close();
+      });
+  });
+    
+    
+  };
+

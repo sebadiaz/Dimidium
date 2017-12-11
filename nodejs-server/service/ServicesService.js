@@ -95,6 +95,8 @@ exports.uploadService = function(body,res) {
     var id=(categoryName+"_"+principalnode[0]['name']+"-"+principalnode[0]['version']);
     principalnode[0].id=id;
     principalnode[0].category=(categoryName);
+    principalnode[0].originalname=principalnode[0].name;
+    principalnode[0].name=categoryName+"/"+principalnode[0].name;
 
     MongoDBService.listDocuments('helmrepo',function(err,result){
       var found=false;
