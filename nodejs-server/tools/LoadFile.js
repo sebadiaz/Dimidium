@@ -22,3 +22,10 @@ exports.loadFile = function(fileName,callback,callBackNotFound) {
     }
     });
 }
+
+exports.loadFileSync = function(fileName) {
+    
+        var fs = require("fs");
+        return  fs.readFileSync(fileName).toString();
+
+    }

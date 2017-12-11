@@ -1,26 +1,20 @@
 'use strict';
 const exec = require('child_process').exec;
-
+const execSync = require('child_process').execSync;
+var Config = require('../../tools/Config');
 function print(err, result) {
   console.log(JSON.stringify(err || result, null, 2));
 }
 
 
-const getPath= function () {
-  var path = ".";
-  if(process.argv.indexOf("--helmpath") != -1){ //does our flag exist?
-    path = process.argv[process.argv.indexOf("--helmpath") + 1]; //grab the next item
-  }
 
-  return path;
-}
 
-const getHelmPath= function () {
-  var path =getPath();
+const getHelmCompPath= function () {
+  var path =Config.getHelmPath();
   if(path){
-    return 'cd "'+path+'";helm' 
+    return 'cd "'+path+'";helm' ;
   }
-  return 'helm' 
+  return 'helm' ;
 }
 
 
@@ -33,21 +27,27 @@ const getHelmPath= function () {
  * InstallRelease(release string, version string, namespace string, releasename string,
  **/
 exports.installRelease = function(release,version,namespace,releasename,keys) {
-  var cmd=getHelmPath()+' install '+release+' --version '+version+' -n '+releasename+' --namespace '+namespace + ' --set '+keys;
+  var cmd=getHelmCompPath()+' install '+release+' --version '+version+' -n '+releasename+' --namespace '+namespace + ' --set '+keys;
   if (!version || version == "" ){
-    cmd=getHelmPath()+' install '+release+' -n '+releasename+' --namespace '+namespace+ ' --set '+keys;
+    cmd=getHelmCompPath()+' install '+release+' -n '+releasename+' --namespace '+namespace+ ' --set '+keys;
   }
-  exec(cmd,print);
+  execSync(cmd);
   
   
 }
 exports.deleteRelease = function(releasename) {
-  exec('helm delete --purge '+releasename,print);
+  execSync('helm delete --purge '+releasename);
   
 }
 
 
 exports.listRelease = function(releasename) {
   exec('helm list',print);
+  
+}
+
+
+exports.repoIndex = function(dirToIndex,url) {
+  execSync(getHelmCompPath()+' repo index '+dirToIndex+' --url '+url);
   
 }

@@ -31,7 +31,46 @@ paths:
         405:
           description: "Invalid input"
       x-swagger-router-controller: "Service"
-  
+  /service/{id}:
+    delete:
+      tags:
+      - "service"
+      operationId: "deleteService"
+      summary: Delete a file.
+      consumes:
+         - multipart/form-data
+      parameters:
+        - name: "id"
+          in: "path"
+          description: "ID of the app to update"
+          required: true
+          type: "string"
+      responses:
+        405:
+          description: "Invalid input"
+      x-swagger-router-controller: "Service"
+  /service/{categoryName}/upload:
+    post:
+      tags:
+      - "service"
+      operationId: "uploadService"
+      summary: Uploads a Chart.
+      consumes:
+         - multipart/form-data
+      parameters:
+        - in: formData
+          name: upfile
+          type: file
+          description: The charts to upload.
+        - name: "categoryName"
+          in: "path"
+          description: "ID of the app to update"
+          required: true
+          type: "string"
+      responses:
+        405:
+          description: "Invalid input"
+      x-swagger-router-controller: "Service"
   /application:
     get:
       tags:
