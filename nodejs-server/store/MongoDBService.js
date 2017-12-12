@@ -150,7 +150,7 @@ exports.pushDocument = function(type,document,callback) {
     console.log("Connected successfully to server");
   
     const db = client.db(dbName);
-    
+    var bucket = new Mongodb.GridFSBucket(db);
     var downloadStream = bucket.openDownloadStreamByName(name);
     downloadStream.on('data', function(data) {
         callback(data);

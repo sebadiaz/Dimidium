@@ -51,3 +51,8 @@ exports.repoIndex = function(dirToIndex,url) {
   execSync(getHelmCompPath()+' repo index '+dirToIndex+' --url '+url);
   
 }
+
+exports.repoAdd = function() {
+  exec(getHelmCompPath()+' repo add '+Config.getRepoName()+' '+Config.getRepoUrl(),print);
+  
+}

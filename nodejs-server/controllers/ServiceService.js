@@ -51,11 +51,37 @@ exports.uploadService = function(args, res, next) {
     }
 
   Service.uploadService(args,res);
-}
+};
+
+exports.downloadChart = function(args, res, next) {
+  /**
+   * Retrieve the list of services with the description.
+   * Should include 
+   *
+   * returns List
+   *
+  var examples = {};
+  examples['application/json'] = [ "" ];
+  if (Object.keys(examples).length > 0) {
+    res.setHeader('Content-Type', 'application/json');
+    res.end(JSON.stringify(examples[Object.keys(examples)[0]] || {}, null, 2));
+  } else {
+    res.end();
+  }
+  */
+ 
+  res.setHeader('Content-Type', 'application/gzip');
+  Service.downloadChart(args,res);
+};
 
 exports.deleteService = function(args, res, next) {
   Service.deleteService(args,res);
-}
+};
+
+exports.downloadIndex = function(args, res, next) {
+  res.setHeader('Content-Type', 'application/x-yaml');
+  Service.downloadIndex(args,res);
+};
 
 
 

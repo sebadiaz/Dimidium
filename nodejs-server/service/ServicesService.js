@@ -5,6 +5,7 @@ var File = require('../tools/LoadFile');
 var Config = require('../tools/Config');
 var Helm = require('../kubernetes/helm/HelmService');
 var Yaml1 = require('js-yaml');
+var YAML = require('yamljs');
 var MongoDBService=require('../store/MongoDBService');
 
 function print(err, result) {
@@ -86,7 +87,7 @@ exports.uploadService = function(body,res) {
 
   Fs.writeFileSync(chartsPath+"/"+file, buffer);
   console.log("The file was saved! %s.",chartsPath+"/"+file);
-  Helm.repoIndex(chartsPath,categoryName);
+  Helm.repoIndex(chartsPath,Config.getRepoName()+"/"+categoryName);
   var fileName = chartsPath+"/index.yaml";
   var brutYaml=File.loadFileSync(fileName);
   var transformed=Yaml1.safeLoad(brutYaml);
@@ -97,9 +98,15 @@ exports.uploadService = function(body,res) {
     principalnode[0].category=(categoryName);
     principalnode[0].originalname=principalnode[0].name;
     principalnode[0].name=categoryName+"/"+principalnode[0].name;
-    principalnode[0].filename=categoryName+'_'+fileName;
+    principalnode[0].completefilename=categoryName+'_'+file;
+    principalnode[0].filename=file;
 
     MongoDBService.listDocuments('helmrepo',function(err,result){
+      if (err){
+        res.statusCode=500;
+        res.end(err);
+        return;
+      }
       var found=false;
       for (var resulUni in result) {
         console.log('Config exists ',result[resulUni].id );
@@ -113,7 +120,7 @@ exports.uploadService = function(body,res) {
       }
       console.log('Save config  ',principalnode[0].id );
       MongoDBService.pushDocument('helmrepo',principalnode[0],print);
-      MongoDBService.pushStream(categoryName+'_'+fileName,Fs.createReadStream(chartsPath+"/"+file),print);
+      MongoDBService.pushStream(categoryName+'_'+file,Fs.createReadStream(chartsPath+"/"+file),print);
       res.end('Chart '+id+' saved !');
     });
     
@@ -122,6 +129,60 @@ exports.uploadService = function(body,res) {
   
 
 };
+
+
+exports.downloadChart = function(body,res) {
+  var str = JSON.stringify(body);
+  console.log('body %s %s', str,body);
+  var categoryName = body['categoryName'].value;
+  var fileName = body['fileName'].value;
+  console.log('file %s categoryName %s buffer %s', fileName,categoryName);
+  
+    
+  MongoDBService.downloadStream(categoryName+'_'+fileName,function(data){res.end(data);},print);
+    
+ 
+  
+
+};
+
+exports.downloadIndex = function(body,res) {
+  var str = JSON.stringify(body);
+  console.log('body %s %s', str,body);
+
+  MongoDBService.listDocuments('helmrepo',function(err,result){
+    if (err){
+      res.statusCode=500;
+      res.end(err);
+      return;
+    }
+    /** 
+    apiVersion: v1
+    entries:
+      alpine:
+        - created: 2016-10-06T16:23:20.499814565-06:00
+    */
+    var indexYaml={apiVersion: 'v1',entries:{}};
+    
+    for (var resulUni in result) {
+      var name=result[resulUni].name;
+      if(!indexYaml['entries'][name]){
+        indexYaml['entries'][name]=[];
+      }
+      indexYaml['entries'][name].push(result[resulUni]);
+      
+    }
+
+    res.end(YAML.stringify(JSON.parse(JSON.stringify(indexYaml))));
+  });
+  
+    
+
+  
+  
+
+};
+
 
 
 

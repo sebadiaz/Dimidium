@@ -19,6 +19,7 @@
     "kubernetes-client": "^3.17.1",
     "kue": "^0.11.6",
     "mongodb": "^3.0.0-rc0",
-    "swagger-tools": "0.10.1"
+    "swagger-tools": "0.10.1",
+    "yamljs": "^0.3.0"
   }
 }

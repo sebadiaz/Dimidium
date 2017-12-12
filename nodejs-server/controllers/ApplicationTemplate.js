@@ -4,6 +4,6 @@ var url = require('url');
 
 var ApplicationTemplate = require('./ApplicationTemplateService');
 
-module.exports.listApp = function listApp (req, res, next) {
-  ApplicationTemplate.listApp(req.swagger.params, res, next);
+module.exports.listTemp = function listTemp (req, res, next) {
+  ApplicationTemplate.listTemp(req.swagger.params, res, next);
 };

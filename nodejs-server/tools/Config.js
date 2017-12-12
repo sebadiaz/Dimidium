@@ -27,3 +27,23 @@ exports.getMongoDbName = function(fileName,callback,callBackNotFound) {
     return path;
 
 }
+
+exports.getRepoName = function(fileName,callback,callBackNotFound) {
+    var path = "dimidium";
+    if(process.argv.indexOf("--reponame") != -1){ //does our flag exist?
+      path = process.argv[process.argv.indexOf("--reponame") + 1]; //grab the next item
+    }
+  
+    return path;
+
+}
+
+exports.getRepoUrl = function(fileName,callback,callBackNotFound) {
+    var path = "http://localhost:8080/v1/service/repo";
+    if(process.argv.indexOf("--reponame") != -1){ //does our flag exist?
+      path = process.argv[process.argv.indexOf("--reponame") + 1]; //grab the next item
+    }
+  
+    return path;
+
+}

@@ -2,7 +2,7 @@
 
 var Template = require('../service/TemplateService');
 
-exports.listApp = function(args, res, next) {
+exports.listTemp = function(args, res, next) {
   /**
    * Retrieve the applications templates
    * Should include 

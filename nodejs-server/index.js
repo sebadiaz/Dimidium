@@ -9,6 +9,7 @@ var swaggerTools = require('swagger-tools');
 var jsyaml = require('js-yaml');
 var serverPort = 8080;
 
+
 // swaggerRouter configuration
 var options = {
   swaggerUi: path.join(__dirname, '/swagger.json'),
@@ -52,6 +53,9 @@ swaggerTools.initializeMiddleware(swaggerDoc, function (middleware) {
   http.createServer(app).listen(serverPort, function () {
     console.log('Your server is listening on port %d (http://localhost:%d)', serverPort, serverPort);
     console.log('Swagger-ui is available on http://localhost:%d/docs', serverPort);
+    console.log( 'Add repo on helm.');
+    var HelmService=require("./kubernetes/helm/HelmService");
+    HelmService.repoAdd();
   });
 
 });
