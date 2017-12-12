@@ -39,13 +39,14 @@ const getTemp= function () {
         delete result[resulUni]._id;
         result[resulUni].name=Config.getRepoName()+"/"+result[resulUni].name;
       }
-      res.end(JSON.stringify(result));
+      var fs = require("fs");
+      var fileName = "static/services.json";
+      File.loadFile(fileName,data=>{res.end(JSON.stringify(JSON.parse(data).concat(result)));},()=>{res.end();})
+      //res.end(JSON.stringify(result));
       
     });
-    //
-    //var fs = require("fs");
-    //var fileName = "static/services.json";
-    //File.loadFile(fileName,data=>{res.end(data);},()=>{res.end();})
+    
+    
 
    
     
