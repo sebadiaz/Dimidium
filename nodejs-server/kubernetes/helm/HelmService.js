@@ -26,13 +26,23 @@ const getHelmCompPath= function () {
  * no response value expected for this operation
  * InstallRelease(release string, version string, namespace string, releasename string,
  **/
-exports.installRelease = function(release,version,namespace,releasename,keys) {
+exports.installRelease = function(release,version,namespace,releasename,keys,callback) {
   var cmd=getHelmCompPath()+' install '+release+' --version '+version+' -n '+releasename+' --namespace '+namespace + ' --set '+keys;
   if (!version || version == "" ){
     cmd=getHelmCompPath()+' install '+release+' -n '+releasename+' --namespace '+namespace+ ' --set '+keys;
   }
-  execSync(cmd);
+  var output={};
+  try {
+    console.log("launch command :"+cmd);
   
+    output = exec(cmd, callback);
+    console.log("launched command :"+cmd);
+  } catch (ex) {
+    output=ex;
+    console.log(output);
+  }
+  
+  return output;
   
 }
 exports.deleteRelease = function(releasename) {

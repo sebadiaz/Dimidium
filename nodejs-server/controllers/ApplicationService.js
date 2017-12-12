@@ -15,9 +15,9 @@ exports.createApp = function(args, res, next) {
    * application ApplicationCreation The application to create. (optional)
    * no response value expected for this operation
    **/
-  var id=Application.createApp(args);
+  var id=Application.createApp(args,res);
   res.setHeader('Content-Type', 'application/json');
-  res.end(JSON.stringify({id:id}));
+  
   //res.end();
 }
 

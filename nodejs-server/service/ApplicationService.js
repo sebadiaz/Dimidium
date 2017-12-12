@@ -26,7 +26,7 @@ const deployByAnnotation= function () {
     return path;
   }
 
-const createAppComp = function(name,workspace,services) {
+const createAppComp = function(name,workspace,services,res) {
     DimAppice.createDefinition();
     workspace=workspace.toLowerCase();
     name=name.toLowerCase();
@@ -58,6 +58,8 @@ const createAppComp = function(name,workspace,services) {
     var keysSet="DIMIDIUM_CNAME_TARGET="+cname_url+",DIMIDIUM_APP_BASE_URL="+dataMap["DIMIDIUM_APP_BASE_URL"]+",DIMIDIUM_WORKSPACE="+workspace+",DIMIDIUM_APP_NAME="+name+",DIMIDIUM_NAMESPACE="+namespace;
     //Install Service
     var arrayLength = services.length;
+    var outputs=[];
+    
     for (var i = 0; i < arrayLength; i++) {
         var helmName=services[i]['name'];
         var version=services[i]['version'];
@@ -68,24 +70,37 @@ const createAppComp = function(name,workspace,services) {
         var releasename=namespace+"-"+deployname.replace('/', '-');
         services[i]['releasename']=releasename;
         //push charts on local
+
+        Helm.installRelease(helmName,version,namespace,releasename,keysSet,function (err, resiult){
+            DimAppice.get(namespace,function(resu,options){
+                if(!resu.status){
+                    resu.status={deployment:[]};
+                }
+                resu.status.deployment.push({deployname:deployname,error:err,result:resiult});
+                DimAppice.update(namespace,resu);
+
+            },null);
+
+        });
         
-        Helm.installRelease(helmName,version,namespace,releasename,keysSet);
   
     }
+
+    DimAppice.create(workspace,namespace,services);
     // Follow Service creation and Add path on DNS when requested
     if(deployByAnnotation()){
         UpdateDNSJob.manageService(namespace,dataMap["DIMIDIUM_APP_BASE_URL"]);
     }
-    DimAppice.create(workspace,namespace,services);
-      
+    
+    res.end(JSON.stringify({id:namespace,outputs:outputs}));
     return namespace;
   }
 
-exports.createApp = function(body) {
+exports.createApp = function(body,res) {
     var name = body['application']['value']['name'];
     var workspace = body['application']['value']['workspace'];
     var services = body['application']['value']['services'];
-    var namespace=createAppComp(name,workspace,services);
+    var namespace=createAppComp(name,workspace,services,res);
 
   return namespace;
 }
@@ -98,7 +113,11 @@ const deleteDimObj = function(body) {
     for (var i = 0; i < arrayLength; i++) {
         var releasename=list[i]['releasename'];
         console.log('DELETE    %s ',releasename);
-        Helm.deleteRelease(releasename);
+        try{
+            Helm.deleteRelease(releasename);
+        } catch (e) {
+        console.error(e);
+      }
     }
     console.log('delete namespace %s',namespace);
     Namespace.deleteNamespace(namespace);
@@ -225,16 +244,22 @@ const getMergedDimObj = function(body,res) {
       "id": body['metadata']['name'],
       "workspace": body['metadata']['labels']['workspace'],
       "name": body['metadata']['name'],
+      "status":body['status'],
       "services": [
         
       ]
     };
+    console.log('constructDimObj    %s',response);
     var items=body['spec']['components']['items'];
     var arrayLength = items.length;
     for (var i = 0; i < arrayLength; i++) {
+        console.log('releasename %s',items[i]['releasename']);
         var releasename=items[i]['releasename'];
         var helmname=items[i]['helmname'];
-        var deployname=items[i]['deployname'].toLowerCase();
+        var deployname=items[i]['deployname'];
+        if(deployname){
+            deployname=deployname.toLowerCase();
+        }
         var helmversion=items[i]['helmversion'];
         if(helmversion){
           response["services"].push({id:releasename,deployname:deployname,name:helmname,version:helmversion});
@@ -351,7 +376,17 @@ const getMergedDimObj = function(body,res) {
 
     //push charts on local
     //add helm
-    Helm.installRelease(helmname,version,namespace,releasename);
+    Helm.installRelease(helmname,version,namespace,releasename,function (err, resiult){
+        DimAppice.get(namespace,function(resu,options){
+            if(!resu.status){
+                resu.status={deployment:[]};
+            }
+            resu.status.deployment.push({deployname:deployname,error:err,result:resiult});
+            DimAppice.update(namespace,resu);
+
+        },null);
+
+    });
 
     //update DiminiumApp
     if(!body['spec']['components']['items']){

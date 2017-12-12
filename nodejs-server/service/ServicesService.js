@@ -37,6 +37,7 @@ const getTemp= function () {
       }
       for (var resulUni in result) {
         delete result[resulUni]._id;
+        result[resulUni].name=Config.getRepoName()+"/"+result[resulUni].name;
       }
       res.end(JSON.stringify(result));
       
