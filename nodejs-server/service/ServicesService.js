@@ -90,7 +90,7 @@ exports.uploadService = function(body,res) {
 
   Fs.writeFileSync(chartsPath+"/"+file, buffer);
   console.log("The file was saved! %s.",chartsPath+"/"+file);
-  Helm.repoIndex(chartsPath,Config.getRepoName()+"/"+categoryName);
+  Helm.repoIndex(chartsPath,categoryName);
   var fileName = chartsPath+"/index.yaml";
   var brutYaml=File.loadFileSync(fileName);
   var transformed=Yaml1.safeLoad(brutYaml);

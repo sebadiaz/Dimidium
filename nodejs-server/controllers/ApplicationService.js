@@ -161,3 +161,15 @@ exports.updateApp = function(args, res, next) {
   res.end();
 }
 
+exports.upgradeServiceApp = function(args, res, next) {
+  /**
+   * Update an application
+   * 
+   *
+   * appId String ID of the app to update
+   * application ApplicationCreation The application to create. (optional)
+   * no response value expected for this operation
+   **/
+  res.setHeader('Content-Type', 'application/json');
+  Application.upgradeServiceApp(args,res);
+}

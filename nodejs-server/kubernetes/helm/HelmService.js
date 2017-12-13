@@ -18,18 +18,18 @@ const getHelmCompPath= function () {
 }
 
 
-/**
- * Add a new pet to the store
- * 
- *
- * body Pet Pet object that needs to be added to the store
- * no response value expected for this operation
- * InstallRelease(release string, version string, namespace string, releasename string,
- **/
-exports.installRelease = function(release,version,namespace,releasename,keys,callback) {
-  var cmd=getHelmCompPath()+' install '+release+' --version '+version+' -n '+releasename+' --namespace '+namespace + ' --set '+keys;
-  if (!version || version == "" ){
-    cmd=getHelmCompPath()+' install '+release+' -n '+releasename+' --namespace '+namespace+ ' --set '+keys;
+const upgradeInstall= function (install,release,version,namespace,releasename,keys,callback) {
+  var cmd="";
+  if(install){
+    var cmd=getHelmCompPath()+' install '+release+' --version '+version+' -n '+releasename+' --namespace '+namespace + ' --set '+keys;
+    if (!version || version == "" ){
+      cmd=getHelmCompPath()+' install '+release+' -n '+releasename+' --namespace '+namespace+ ' --set '+keys;
+    }
+  }else{
+    cmd=getHelmCompPath()+' upgrade '+releasename+' '+release+' --version '+version+' --namespace '+namespace + ' --set '+keys;
+    if (!version || version == "" ){
+      cmd=getHelmCompPath()+' upgrade '+releasename+' '+release+' --namespace '+namespace+ ' --set '+keys;
+    }
   }
   var output={};
   try {
@@ -43,10 +43,54 @@ exports.installRelease = function(release,version,namespace,releasename,keys,cal
   }
   
   return output;
+}
+
+
+/**
+ * Add a new pet to the store
+ * 
+ *
+ * body Pet Pet object that needs to be added to the store
+ * no response value expected for this operation
+ * InstallRelease(release string, version string, namespace string, releasename string,
+ **/
+
+exports.installRelease = function(release,version,namespace,releasename,keys,callback) {
+  this.update((err, result)=>upgradeInstall(true,release,version,namespace,releasename,keys,callback));
+  
   
 }
+
+exports.upgradeRelease = function(release,version,namespace,releasename,keys,callback) {
+  this.update((err, result)=>upgradeInstall(false,release,version,namespace,releasename,keys,callback));
+  /*
+  var cmd=getHelmCompPath()+' upgrade '+releasename+' '+release+' --version '+version+' --namespace '+namespace + ' --set '+keys;
+  if (!version || version == "" ){
+    cmd=getHelmCompPath()+' upgrade '+releasename+' '+release+' --namespace '+namespace+ ' --set '+keys;
+  }
+  var output={};
+  try {
+    console.log("launch command :"+cmd);
+  
+    output = exec(cmd, callback);
+    console.log("launched command :"+cmd);
+  } catch (ex) {
+    output=ex;
+    console.log(output);
+  }
+  
+  return output;
+  */
+  
+}
+
 exports.deleteRelease = function(releasename) {
   execSync('helm delete --purge '+releasename);
+  
+}
+
+exports.update = function(callback) {
+  exec('helm up',callback);
   
 }
 

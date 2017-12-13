@@ -43,3 +43,8 @@ module.exports.listApp = function listApp (req, res, next) {
 module.exports.updateApp = function updateApp (req, res, next) {
   Application.updateApp(req.swagger.params, res, next);
 };
+
+module.exports.upgradeServiceApp = function upgradeServiceApp (req, res, next) {
+  Application.upgradeServiceApp(req.swagger.params, res, next);
+};
+

@@ -27,16 +27,7 @@ const deployByAnnotation= function () {
     return path;
   }
 
-const createAppComp = function(name,workspace,services,res) {
-    DimAppice.createDefinition();
-    workspace=workspace.toLowerCase();
-    name=name.toLowerCase();
-    var namespace = workspace+"-"+name;
-    namespace=namespace.toLowerCase();
-    //Create service
-    Namespace.createNamespace(namespace,workspace);
-    //Create configMap
-    
+  const getKeys = function(name,namespace,workspace) {
     var base_url="default";
     if(process.argv.indexOf("--base-url") != -1){ //does our flag exist?
         base_url = process.argv[process.argv.indexOf("--base-url") + 1]; //grab the next item
@@ -55,12 +46,54 @@ const createAppComp = function(name,workspace,services,res) {
     dataMap["DIMIDIUM_NAMESPACE"]=namespace;
     dataMap["DIMIDIUM_APP_BASE_URL"]=name+"-"+workspace+"."+base_url;
     dataMap["DIMIDIUM_CNAME_TARGET"]=cname_url;
-    ConfigMap.createConfigMap(namespace,workspace,'dimidium-config',dataMap);
-    var keysSet="DIMIDIUM_CNAME_TARGET="+cname_url+",DIMIDIUM_APP_BASE_URL="+dataMap["DIMIDIUM_APP_BASE_URL"]+",DIMIDIUM_WORKSPACE="+workspace+",DIMIDIUM_APP_NAME="+name+",DIMIDIUM_NAMESPACE="+namespace;
+    return dataMap;
+    };
+
+    
+const joinStr = function(mapin,glue, separator) { 
+
+    var output="";
+    var first=true;
+    for (var K in mapin)
+    {
+        if (!first){ output=output+separator;}
+        output+=K+glue+mapin[K];
+        first=false;
+    }
+    return output;
+};
+
+const createAppComp = function(name,workspace,services,res) {
+    DimAppice.createDefinition();
+    workspace=workspace.toLowerCase();
+    name=name.toLowerCase();
+    var namespace = workspace+"-"+name;
+    namespace=namespace.toLowerCase();
+    //Create service
+    Namespace.createNamespace(namespace,workspace);
+    //Create configMap
+    
+    var dataMap=getKeys(name,namespace,workspace);
+    var keysSet=joinStr(dataMap,'=',',');//"DIMIDIUM_CNAME_TARGET="+cname_url+",DIMIDIUM_APP_BASE_URL="+dataMap["DIMIDIUM_APP_BASE_URL"]+",DIMIDIUM_WORKSPACE="+workspace+",DIMIDIUM_APP_NAME="+name+",DIMIDIUM_NAMESPACE="+namespace;
     //Install Service
     var arrayLength = services.length;
     var outputs=[];
     
+    for (var i = 0; i < arrayLength; i++) {
+        var helmName=services[i]['name'];
+        var version=services[i]['version'];
+        var deployname = helmName;
+        if(services[i]['deployname']){
+            deployname = services[i]['deployname'].toLowerCase();
+        }
+        var releasename=namespace+"-"+deployname.replace('/', '-');
+        services[i]['releasename']=releasename;
+        //push charts on local
+  
+    }
+
+    DimAppice.create(workspace,namespace,services);
+
     for (var i = 0; i < arrayLength; i++) {
         var helmName=services[i]['name'];
         var version=services[i]['version'];
@@ -76,19 +109,17 @@ const createAppComp = function(name,workspace,services,res) {
             var deploysaved=deployname;
             DimAppice.get(namespace,function(resu,options){
                 if(!resu.status){
-                    resu.status={deployment:[]};
+                    resu.status={helm:[]};
                 }
-                resu.status.deployment.push({deployname:deploysaved,error:err,result:resiult});
+                resu.status.helm.push({deployname:deploysaved,error:err,result:resiult});
                 DimAppice.update(namespace,resu);
 
             },null);
 
         });
-        
+       
   
     }
-
-    DimAppice.create(workspace,namespace,services);
     // Follow Service creation and Add path on DNS when requested
     if(deployByAnnotation()){
         UpdateDNSJob.manageService(namespace,dataMap["DIMIDIUM_APP_BASE_URL"]);
@@ -96,7 +127,7 @@ const createAppComp = function(name,workspace,services,res) {
     
     res.end(JSON.stringify({id:namespace}));
     return namespace;
-  }
+  };
 
 exports.createApp = function(body,res) {
     var name = body['application']['value']['name'];
@@ -144,7 +175,7 @@ exports.deleteApp = function(body) {
 
 const getMergedIngressesObj = function(body,res) {
     var result = res.body;
-    var namespace=undefined;
+    var namespace=res.namespace;
     var str = JSON.stringify(body);
     
     console.log('body deeeeee %s %s',str , body);
@@ -206,12 +237,13 @@ const getMergedDimObj = function(body,res) {
     console.log('body dim %s %s',str , body);
     var items = body['items'];
     var result = res.body;
-
+    var namespace = undefined;
     var arrayLength = items.length;
     for (var i = 0; i < arrayLength; i++) {
           var name=items[i]['metadata']['name'];
           var labels=items[i]['metadata']['labels'];
           var annotations=items[i]['metadata']['annotations'];
+          namespace=items[i]['metadata']['namespace'];
           var release=undefined;
           if (labels&&items[i]['status']['loadBalancer']&&items[i]['spec']['type']=="LoadBalancer"){
 
@@ -259,7 +291,8 @@ const getMergedDimObj = function(body,res) {
            
           }
     }
-    res[body]=result;
+    res['body']=result;
+    res['namespace']=res.original['metadata']['name'];
     Ingress.getIngresses(res.original['metadata']['name'],getMergedIngressesObj,res);
     //res['res'].end(JSON.stringify(result));
   }
@@ -399,21 +432,36 @@ const getMergedDimObj = function(body,res) {
         deployname=helmname;
     }
     var releasename=namespace+"-"+deployname.replace('/', '-');
-
+    var dataMap=getKeys(appname,namespace,workspace);
+    var keysSet=joinStr(dataMap,'=',',');//"DIMIDIUM_CNAME_TARGET="+cname_url+",DIMIDIUM_APP_BASE_URL="+dataMap["DIMIDIUM_APP_BASE_URL"]+",DIMIDIUM_WORKSPACE="+workspace+",DIMIDIUM_APP_NAME="+name+",DIMIDIUM_NAMESPACE="+namespace;
+   
     //push charts on local
+    if(res['upgrade']){
+        Helm.upgradeRelease(helmname,version,namespace,releasename,keysSet,function (err, resiult){
+            DimAppice.get(namespace,function(resu,options){
+                if(!resu.status){
+                    resu.status={helm:[]};
+                }
+                resu.status.helm.push({deployname:deployname,error:err,result:resiult});
+                DimAppice.update(namespace,resu);
+    
+            },null);
+    
+        });
+    }else{
     //add helm
-    Helm.installRelease(helmname,version,namespace,releasename,function (err, resiult){
-        DimAppice.get(namespace,function(resu,options){
-            if(!resu.status){
-                resu.status={helm:[]};
-            }
-            resu.status.helm.push({deployname:deployname,error:err,result:resiult});
-            DimAppice.update(namespace,resu);
+        Helm.installRelease(helmname,version,namespace,releasename,keysSet,function (err, resiult){
+            DimAppice.get(namespace,function(resu,options){
+                if(!resu.status){
+                    resu.status={helm:[]};
+                }
+                resu.status.helm.push({deployname:deployname,error:err,result:resiult});
+                DimAppice.update(namespace,resu);
 
-        },null);
+            },null);
 
-    });
-
+        });
+    }
     //update DiminiumApp
     if(!body['spec']['components']['items']){
         body['spec']['components']['items']=[];
@@ -426,6 +474,7 @@ const getMergedDimObj = function(body,res) {
     str = JSON.stringify(newBody);
     console.log('pushHelm %s %s',str , newBody);
     DimAppice.update(appname,body);
+    res.end(appname);
   }
   
   exports.addServiceApp = function(body,res) {
@@ -435,9 +484,35 @@ const getMergedDimObj = function(body,res) {
     var appId = body['appId'].value;
     var resour=[];
     resour['name'] = body['service']['value']['name'];
-    resour['deployname'] = body['service']['value']['deployname'].toLowerCase();
+    resour['deployname'] = body['service']['value']['deployname'];
+    if(resour['deployname']){
+        resour['deployname']=resour['deployname'].toLowerCase();
+    }
     resour['version'] = body['service']['value']['version'];
     resour['res']=res;
+    //Load dim
+    DimAppice.get(appId,pushHelm,resour);
+    //add helm
+  
+
+    
+  }
+
+  exports.upgradeServiceApp = function(body,res) {
+    
+    var str = JSON.stringify(body);
+    console.log('body %s %s',str , body);
+    var appId = body['appId'].value;
+    var serviceId = body['serviceId'].value;
+    var resour=[];
+    resour['name'] = body['service']['value']['name'];
+    resour['deployname'] = body['service']['value']['deployname'];
+    if(resour['deployname']){
+        resour['deployname']=resour['deployname'].toLowerCase();
+    }
+    resour['version'] = body['service']['value']['version'];
+    resour['res']=res;
+    resour['upgrade']=true;
     //Load dim
     DimAppice.get(appId,pushHelm,resour);
     //add helm

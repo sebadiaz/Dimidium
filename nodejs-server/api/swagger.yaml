@@ -233,7 +233,38 @@ paths:
         405:
           description: "Invalid input"
       x-swagger-router-controller: "Application"
-  
+  /application/{appId}/service/{serviceId}:
+    put:
+      tags:
+      - "application"
+      summary: "Upgrade a service"
+      description: ""
+      operationId: "upgradeServiceApp"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "appId"
+        in: "path"
+        description: "ID of the app to update"
+        required: true
+        type: "string"
+      - name: "serviceId"
+        in: "path"
+        description: "ID of the service to update"
+        required: true
+        type: "string"
+      - in: "body"
+        name: "service"
+        description: "The service to add."
+        required: false
+        schema:
+          $ref: "#/definitions/ServiceName"
+      responses:
+        405:
+          description: "Invalid input"
+      x-swagger-router-controller: "Application"
   /template:
     get:
       tags:
