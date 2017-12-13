@@ -2,6 +2,7 @@
 'use strict';
 var DimAppice = require('../kubernetes/client/DimAppService');
 var Namespace = require('../kubernetes/client/NamespaceService');
+var Deployment = require('../kubernetes/client/DeploymentService');
 var ConfigMap = require('../kubernetes/client/ConfigMapService');
 var Service = require('../kubernetes/client/ServicesService');
 var Ingress = require('../kubernetes/client/IngressService');
@@ -63,20 +64,21 @@ const createAppComp = function(name,workspace,services,res) {
     for (var i = 0; i < arrayLength; i++) {
         var helmName=services[i]['name'];
         var version=services[i]['version'];
-        var deployname = services[i]['deployname'].toLowerCase();
-        if(!deployname){
-            deployname=helmName;
+        var deployname = helmName;
+        if(services[i]['deployname']){
+            deployname = services[i]['deployname'].toLowerCase();
         }
         var releasename=namespace+"-"+deployname.replace('/', '-');
         services[i]['releasename']=releasename;
         //push charts on local
 
         Helm.installRelease(helmName,version,namespace,releasename,keysSet,function (err, resiult){
+            var deploysaved=deployname;
             DimAppice.get(namespace,function(resu,options){
                 if(!resu.status){
                     resu.status={deployment:[]};
                 }
-                resu.status.deployment.push({deployname:deployname,error:err,result:resiult});
+                resu.status.deployment.push({deployname:deploysaved,error:err,result:resiult});
                 DimAppice.update(namespace,resu);
 
             },null);
@@ -92,7 +94,7 @@ const createAppComp = function(name,workspace,services,res) {
         UpdateDNSJob.manageService(namespace,dataMap["DIMIDIUM_APP_BASE_URL"]);
     }
     
-    res.end(JSON.stringify({id:namespace,outputs:outputs}));
+    res.end(JSON.stringify({id:namespace}));
     return namespace;
   }
 
@@ -142,14 +144,18 @@ exports.deleteApp = function(body) {
 
 const getMergedIngressesObj = function(body,res) {
     var result = res.body;
+    var namespace=undefined;
     var str = JSON.stringify(body);
-    console.log('body dim %s %s',str , body);
+    
+    console.log('body deeeeee %s %s',str , body);
     try {  
     var items = body['items'];
     var arrayLength = items.length;
+
     for (var i = 0; i < arrayLength; i++) {
           var name=items[i]['metadata']['name'];
           var creationTimestamp=items[i]['metadata']['creationTimestamp'];
+          var namespace=items[i]['metadata']['namespace'];
           var labels=items[i]['labels'];
           var spec=items[i]['spec'];
           var status=items[i]['status'];
@@ -169,11 +175,31 @@ const getMergedIngressesObj = function(body,res) {
 
 
     }
-} catch (e) {
+  } catch (e) {
     console.error(e);
   }
-    res['res'].end(JSON.stringify(result));
+  if(namespace){
+        Deployment.getDeployments(namespace,mergeWithDeployements,{result:result,res:res['res']} );
+  }else{
+        res['res'].end(JSON.stringify(result));
+  }
 }
+
+const mergeWithDeployements = function(res,option){
+    var str = JSON.stringify(res);
+    console.log('body res %s %s',str , res);
+    
+    var resultin=option['result'];
+     if (!resultin['status']){
+        resultin['status']={};
+     }
+     if (!resultin['status']['components']){
+        resultin['status']['components']={};
+    }
+    resultin['status']['components']['deployments']=res;
+    option['res'].end(JSON.stringify(resultin));
+
+ }
 
 const getMergedDimObj = function(body,res) {
     var str = JSON.stringify(body);
@@ -327,7 +353,7 @@ const getMergedDimObj = function(body,res) {
     for (var i = 0; i < arrayLength; i++) {
         if(items[i]['name']==name){
 
-            namespace=createAppComp(deployname.toLowerCase(),workspace,items[i]['services']);
+            namespace=createAppComp(deployname.toLowerCase(),workspace,items[i]['services'],res);
         }
     }
     console.log('namespace %s',namespace );
@@ -379,9 +405,9 @@ const getMergedDimObj = function(body,res) {
     Helm.installRelease(helmname,version,namespace,releasename,function (err, resiult){
         DimAppice.get(namespace,function(resu,options){
             if(!resu.status){
-                resu.status={deployment:[]};
+                resu.status={helm:[]};
             }
-            resu.status.deployment.push({deployname:deployname,error:err,result:resiult});
+            resu.status.helm.push({deployname:deployname,error:err,result:resiult});
             DimAppice.update(namespace,resu);
 
         },null);

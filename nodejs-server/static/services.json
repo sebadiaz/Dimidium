@@ -15,6 +15,9 @@
       },{
           "name": "ffdc-reporting/uxp",
           "description":"UXP on CI/CD."
+        },{
+          "name": "ffdc-pfm/uxp",
+          "description":"UX for for PFM platform."
         }
 
   ]

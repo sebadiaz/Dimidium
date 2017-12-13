@@ -33,6 +33,7 @@ const getTemp= function () {
       if(err){
         res.statusCode=500;
         res.end(err);
+        console.log(JSON.stringify(err));
         return;
       }
       for (var resulUni in result) {
@@ -107,6 +108,7 @@ exports.uploadService = function(body,res) {
       if (err){
         res.statusCode=500;
         res.end(err);
+        console.log(JSON.stringify(err));
         return;
       }
       var found=false;
@@ -155,7 +157,8 @@ exports.downloadIndex = function(body,res) {
   MongoDBService.listDocuments('helmrepo',function(err,result){
     if (err){
       res.statusCode=500;
-      res.end(err);
+      console.log(JSON.stringify(err));
+      res.end(JSON.stringify(err));
       return;
     }
     /** 

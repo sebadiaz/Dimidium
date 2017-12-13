@@ -28,6 +28,18 @@
         "name": "ffdc-reporting/uxp"
       }
     ]
+  },{
+    "workspace": "traider",
+    "name": "pfm-demo",
+    "description":"PFM Demo !",
+    "services": [
+      {
+        "name": "ffdc-reporting/reporting"
+      },
+      {
+        "name": "ffdc-pfm/uxp"
+      }
+    ]
   }
 ]
 

@@ -54,6 +54,11 @@ const insertDocuments = function(db, type,document,callback) {
 
     // Use connect method to connect to the server
     MongoClient.connect(url, function(err, client) {
+      if (err){
+        callback(err,r);
+        console.log('url:'+url+" "+JSON.stringify(err));
+        return;
+      }
     
     console.log("Connected successfully to server");
   
@@ -76,6 +81,11 @@ exports.pushDocument = function(type,document,callback) {
 
     // Use connect method to connect to the server
     MongoClient.connect(url, function(err, client) {
+      if (err){
+        callback(err,r);
+        console.log('url:'+url+" "+JSON.stringify(err));
+        return;
+      }
     
     console.log("Connected successfully to server");
   
@@ -98,6 +108,11 @@ exports.pushDocument = function(type,document,callback) {
 
     // Use connect method to connect to the server
     MongoClient.connect(url, function(err, client) {
+      if (err){
+        callback(err,r);
+        console.log('url:'+url+" "+JSON.stringify(err));
+        return;
+      }
     
     console.log("Connected successfully to server");
   
@@ -123,6 +138,11 @@ exports.pushDocument = function(type,document,callback) {
 
     // Use connect method to connect to the server
     MongoClient.connect(url, function(err, client) {
+      if (err){
+        callback(err,r);
+        console.log('url:'+url+" "+JSON.stringify(err));
+        return;
+      }
     
     console.log("Connected successfully to server");
   
@@ -146,6 +166,11 @@ exports.pushDocument = function(type,document,callback) {
 
     // Use connect method to connect to the server
     MongoClient.connect(url, function(err, client) {
+      if (err){
+        callback(err,r);
+        console.log('url:'+url+" "+JSON.stringify(err));
+        return;
+      }
     
     console.log("Connected successfully to server");
   
