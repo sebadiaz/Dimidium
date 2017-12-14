@@ -1,5 +1,5 @@
 
-exports.getHelmPath = function(fileName,callback,callBackNotFound) {
+exports.getHelmPath = function() {
         var path = "charts";
         if(process.argv.indexOf("--helmpath") != -1){ //does our flag exist?
           path = process.argv[process.argv.indexOf("--helmpath") + 1]; //grab the next item
@@ -7,9 +7,9 @@ exports.getHelmPath = function(fileName,callback,callBackNotFound) {
       
         return path;
     
-}
+};
 
-exports.getMongoDbUrl = function(fileName,callback,callBackNotFound) {
+exports.getMongoDbUrl = function() {
     var path = "mongodb://localhost:27017";
     if(process.argv.indexOf("--mongodburl") != -1){ //does our flag exist?
       path = process.argv[process.argv.indexOf("--mongodburl") + 1]; //grab the next item
@@ -17,8 +17,8 @@ exports.getMongoDbUrl = function(fileName,callback,callBackNotFound) {
   
     return path;
 
-}
-exports.getMongoDbName = function(fileName,callback,callBackNotFound) {
+};
+exports.getMongoDbName = function() {
     var path = "dimidium";
     if(process.argv.indexOf("--mongodbname") != -1){ //does our flag exist?
       path = process.argv[process.argv.indexOf("--mongodbname") + 1]; //grab the next item
@@ -26,9 +26,9 @@ exports.getMongoDbName = function(fileName,callback,callBackNotFound) {
   
     return path;
 
-}
+};
 
-exports.getRepoName = function(fileName,callback,callBackNotFound) {
+exports.getRepoName = function() {
     var path = "dimidium";
     if(process.argv.indexOf("--reponame") != -1){ //does our flag exist?
       path = process.argv[process.argv.indexOf("--reponame") + 1]; //grab the next item
@@ -36,9 +36,9 @@ exports.getRepoName = function(fileName,callback,callBackNotFound) {
   
     return path;
 
-}
+};
 
-exports.getRepoUrl = function(fileName,callback,callBackNotFound) {
+exports.getRepoUrl = function() {
     var path = "http://localhost:8080/v1/service/repo";
     if(process.argv.indexOf("--reponame") != -1){ //does our flag exist?
       path = process.argv[process.argv.indexOf("--reponame") + 1]; //grab the next item
@@ -46,4 +46,10 @@ exports.getRepoUrl = function(fileName,callback,callBackNotFound) {
   
     return path;
 
-}
+};
+
+exports.isDebug = function() {
+  
+  return (process.argv.indexOf("debug") != -1);
+
+};

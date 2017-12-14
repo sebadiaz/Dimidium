@@ -9,6 +9,7 @@ var Ingress = require('../kubernetes/client/IngressService');
 var File = require('../tools/LoadFile');
 var Helm = require('../kubernetes/helm/HelmService');
 var UpdateDNSJob = require('../jobs/UpdateDNSJob');
+var Config = require('../tools/Config');
 
 /**
  * Add a new pet to the store
@@ -107,12 +108,31 @@ const createAppComp = function(name,workspace,services,res) {
 
         Helm.installRelease(helmName,version,namespace,releasename,keysSet,function (err, resiult){
             var deploysaved=deployname;
+            var datenow=Date.now();
             DimAppice.get(namespace,function(resu,options){
                 if(!resu.status){
                     resu.status={helm:[]};
                 }
-                resu.status.helm.push({deployname:deploysaved,error:err,result:resiult});
+                resu.status.helm.push({date:datenow,deployname:deploysaved,error:err,result:resiult});
                 DimAppice.update(namespace,resu);
+                DimAppice.get(namespace,function(resu2,options2){
+                    if(!resu2.status){
+                        resu2.status={helm:[]};
+                    }
+                    var isFound=false;
+                    for( var id in resu2.status.helm){
+                        var act=resu2.status.helm[id];
+                        if(act.date==datenow && act.deployname==deploysaved){
+                            isFound=true;
+                        }
+                    }
+                    if(!isFound){
+                        resu2.status.helm.push({date:datenow,deployname:deploysaved,error:err,result:resiult});
+                        DimAppice.update(namespace,resu2);
+                    }
+                    
+    
+                },null);
 
             },null);
 
@@ -139,7 +159,8 @@ exports.createApp = function(body,res) {
 }
 const deleteDimObj = function(body) {
     var str = JSON.stringify(body);
-    console.log('body dim %s %s',str , body);
+    if (Config.isDebug())
+        console.log('body dim %s %s',str , body);
     var list=body['spec']['components']['items'];
     var namespace=body['metadata']['labels']['namespace'];
     var arrayLength = list.length;
@@ -177,8 +198,8 @@ const getMergedIngressesObj = function(body,res) {
     var result = res.body;
     var namespace=res.namespace;
     var str = JSON.stringify(body);
-    
-    console.log('body deeeeee %s %s',str , body);
+    if (Config.isDebug())
+        console.log('body deeeeee %s %s',str , body);
     try {  
     var items = body['items'];
     var arrayLength = items.length;
@@ -218,7 +239,8 @@ const getMergedIngressesObj = function(body,res) {
 
 const mergeWithDeployements = function(res,option){
     var str = JSON.stringify(res);
-    console.log('body res %s %s',str , res);
+    if (Config.isDebug())
+        console.log('body res %s %s',str , res);
     
     var resultin=option['result'];
      if (!resultin['status']){
@@ -234,7 +256,8 @@ const mergeWithDeployements = function(res,option){
 
 const getMergedDimObj = function(body,res) {
     var str = JSON.stringify(body);
-    console.log('body dim %s %s',str , body);
+    if (Config.isDebug())
+        console.log('body dim %s %s',str , body);
     var items = body['items'];
     var result = res.body;
     var namespace = undefined;
@@ -308,7 +331,8 @@ const getMergedDimObj = function(body,res) {
         
       ]
     };
-    console.log('constructDimObj    %s',response);
+    if (Config.isDebug())
+        console.log('constructDimObj    %s',response);
     var items=body['spec']['components']['items'];
     var arrayLength = items.length;
     for (var i = 0; i < arrayLength; i++) {
@@ -338,16 +362,19 @@ const getMergedDimObj = function(body,res) {
         return;
     }
 
-    console.log('getDimObj    %s %s',str , body);
-      var response=constructDimObj(body);
-      var result={res:res,body:response,original:body};
-      console.log('getDimObj    %s',result);
-      Service.getServices(body['metadata']['name'],getMergedDimObj,result);
+    if (Config.isDebug())
+        console.log('getDimObj    %s %s',str , body);
+    var response=constructDimObj(body);
+    var result={res:res,body:response,original:body};
+    if (Config.isDebug())
+        console.log('getDimObj    %s',result);
+    Service.getServices(body['metadata']['name'],getMergedDimObj,result);
   }
 
     const getDimObjs = function(body,res) {
         var str = JSON.stringify(body);
-        console.log('getDimObjs    %s %s',str , body);
+        if (Config.isDebug())
+            console.log('getDimObjs    %s %s',str , body);
         var items=body['items'];
         var arrayLength = items.length;
         var responses=[];
@@ -362,9 +389,11 @@ const getMergedDimObj = function(body,res) {
   exports.getApp = function(body,res) {
     
     var str = JSON.stringify(body);
-    console.log('body %s %s',str , body);
+    if (Config.isDebug())
+        console.log('body %s %s',str , body);
     var appId = body['appId'].value;
-    console.log('appId %s',appId);
+    if (Config.isDebug())
+        console.log('appId %s',appId);
     DimAppice.get(appId,getDimObj,res);
     
   }
@@ -372,7 +401,8 @@ const getMergedDimObj = function(body,res) {
   exports.listApp = function(body,res) {
     
     var str = JSON.stringify(body);
-    console.log('body %s %s',str , body);
+    if (Config.isDebug())
+        console.log('body %s %s',str , body);
 
     DimAppice.list(getDimObjs,res);
     
@@ -380,7 +410,8 @@ const getMergedDimObj = function(body,res) {
 
   const loadTemplate = function(data,name,deployname,workspace,res) {
     var items=JSON.parse(data);
-    console.log('loadTemplate %s',data );
+    if (Config.isDebug())
+        console.log('loadTemplate %s',data );
     var arrayLength = items.length;
     var namespace=undefined;
     for (var i = 0; i < arrayLength; i++) {
@@ -393,7 +424,8 @@ const getMergedDimObj = function(body,res) {
     if(namespace){
         res.end(namespace);  
     }else{
-        console.log('404 %s',namespace );
+        if (Config.isDebug())
+            console.log('404 %s',namespace );
         res.statusCode=404;
         res.end()
         console.log('end %s',namespace );
@@ -403,7 +435,8 @@ const getMergedDimObj = function(body,res) {
   exports.createAppTemplate = function(body,res) {
     
     var str = JSON.stringify(body);
-    console.log('body %s %s',str , body);
+    if (Config.isDebug())
+        console.log('body %s %s',str , body);
     var name = body['application']['value']['templatename'];
     var deployname = body['application']['value']['deployname'].toLowerCase();
     var workspace = body['application']['value']['workspace'];
@@ -414,7 +447,8 @@ const getMergedDimObj = function(body,res) {
 
   const pushHelm = function(body,res) {
     var str = JSON.stringify(body);
-    console.log('pushHelm %s %s',str , body);
+    if (Config.isDebug())
+        console.log('pushHelm %s %s',str , body);
     if(body['code']){
         res['res'].statusCode=body['code'];
         res['res'].end();
@@ -423,7 +457,8 @@ const getMergedDimObj = function(body,res) {
     var appname=body['metadata']['name'];
     var workspace=body['metadata']['labels']['workspace'];
     var namespace=body['metadata']['labels']['namespace'];
-    console.log('pushHelm %s %s',str , body);
+    if (Config.isDebug())
+        console.log('pushHelm %s %s',str , body);
     var helmname=res['name'];
     var deployname=res['deployname'].toLowerCase();
     var version=res['version'];
@@ -474,7 +509,7 @@ const getMergedDimObj = function(body,res) {
     str = JSON.stringify(newBody);
     console.log('pushHelm %s %s',str , newBody);
     DimAppice.update(appname,body);
-    res.end(appname);
+    res['res'].end(appname);
   }
   
   exports.addServiceApp = function(body,res) {

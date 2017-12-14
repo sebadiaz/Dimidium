@@ -262,6 +262,10 @@ paths:
         schema:
           $ref: "#/definitions/ServiceName"
       responses:
+        200:
+          description: "Application Id."
+          schema:
+            type: string
         405:
           description: "Invalid input"
       x-swagger-router-controller: "Application"
