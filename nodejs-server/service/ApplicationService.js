@@ -113,7 +113,7 @@ const createAppComp = function(name,workspace,services,res) {
                 if(!resu.status){
                     resu.status={helm:[]};
                 }
-                resu.status.helm.push({date:datenow,deployname:deploysaved,error:err,result:resiult});
+                resu.status.helm.push({type:'install',date:datenow,deployname:deploysaved,error:err,result:resiult});
                 DimAppice.update(namespace,resu);
                 DimAppice.get(namespace,function(resu2,options2){
                     if(!resu2.status){
@@ -127,7 +127,7 @@ const createAppComp = function(name,workspace,services,res) {
                         }
                     }
                     if(!isFound){
-                        resu2.status.helm.push({date:datenow,deployname:deploysaved,error:err,result:resiult});
+                        resu2.status.helm.push({type:'install',date:datenow,deployname:deploysaved,error:err,result:resiult});
                         DimAppice.update(namespace,resu2);
                     }
                     
@@ -368,6 +368,7 @@ const getMergedDimObj = function(body,res) {
     var result={res:res,body:response,original:body};
     if (Config.isDebug())
         console.log('getDimObj    %s',result);
+    
     Service.getServices(body['metadata']['name'],getMergedDimObj,result);
   }
 
@@ -392,8 +393,18 @@ const getMergedDimObj = function(body,res) {
     if (Config.isDebug())
         console.log('body %s %s',str , body);
     var appId = body['appId'].value;
+    var advanced = body['advanced'].value;
     if (Config.isDebug())
         console.log('appId %s',appId);
+
+    var pipeline=[];
+    //pipeline.push(Service.getServices,mergeWithServiceResult);
+    //pipeline.push(Ingress.getIngresses,mergeWithIngressResult);
+    //if(advanced &&advanced.toLowerCase()=='true'){
+    //    pipeline.push(Deployment.getDeployments,mergeWithStatusResult);
+    //    pipeline.push(Service.getServices,mergeWithStatusResult);
+       // pipeline.push(Pod.getPods,mergeWithStatusResult);
+    //}
     DimAppice.get(appId,getDimObj,res);
     
   }
@@ -469,7 +480,7 @@ const getMergedDimObj = function(body,res) {
     var releasename=namespace+"-"+deployname.replace('/', '-');
     var dataMap=getKeys(appname,namespace,workspace);
     var keysSet=joinStr(dataMap,'=',',');//"DIMIDIUM_CNAME_TARGET="+cname_url+",DIMIDIUM_APP_BASE_URL="+dataMap["DIMIDIUM_APP_BASE_URL"]+",DIMIDIUM_WORKSPACE="+workspace+",DIMIDIUM_APP_NAME="+name+",DIMIDIUM_NAMESPACE="+namespace;
-   
+    var datenow=Date.now();
     //push charts on local
     if(res['upgrade']){
         Helm.upgradeRelease(helmname,version,namespace,releasename,keysSet,function (err, resiult){
@@ -477,7 +488,7 @@ const getMergedDimObj = function(body,res) {
                 if(!resu.status){
                     resu.status={helm:[]};
                 }
-                resu.status.helm.push({deployname:deployname,error:err,result:resiult});
+                resu.status.helm.push({type:'upgrade',date:datenow,deployname:deployname,error:err,result:resiult});
                 DimAppice.update(namespace,resu);
     
             },null);
@@ -486,11 +497,12 @@ const getMergedDimObj = function(body,res) {
     }else{
     //add helm
         Helm.installRelease(helmname,version,namespace,releasename,keysSet,function (err, resiult){
+             var datenow=Date.now();
             DimAppice.get(namespace,function(resu,options){
                 if(!resu.status){
                     resu.status={helm:[]};
                 }
-                resu.status.helm.push({deployname:deployname,error:err,result:resiult});
+                resu.status.helm.push({type:'install',date:datenow,deployname:deployname,error:err,result:resiult});
                 DimAppice.update(namespace,resu);
 
             },null);

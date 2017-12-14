@@ -31,6 +31,7 @@ const upgradeInstall= function (install,release,version,namespace,releasename,ke
       cmd=getHelmCompPath()+' upgrade '+releasename+' '+release+' --namespace '+namespace+ ' --set '+keys;
     }
   }
+  cmd=cmd+" 2>>1";
   var output={};
   try {
     console.log("launch command :"+cmd);

@@ -171,6 +171,10 @@ paths:
       produces:
       - "application/json"
       parameters:
+      - name: "advanced"
+        in: "query"
+        description: "Advanced mode"
+        type: "string"
       - name: "appId"
         in: "path"
         description: "ID of the app to update"
