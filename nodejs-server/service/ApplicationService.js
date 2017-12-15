@@ -50,7 +50,18 @@ const deployByAnnotation= function () {
     return dataMap;
     };
 
-    
+
+const transformMap = function(obj) { 
+    var output=[];
+    for (var K in obj)
+    {
+        var oin={};
+        oin[K]=obj[oin];
+        output.push(oin);
+    }
+    return output;
+};
+
 const joinStr = function(mapin,glue, separator) { 
 
     var output="";
@@ -64,18 +75,41 @@ const joinStr = function(mapin,glue, separator) {
     return output;
 };
 
-const createAppComp = function(name,workspace,services,res) {
-    DimAppice.createDefinition();
-    workspace=workspace.toLowerCase();
-    name=name.toLowerCase();
-    var namespace = workspace+"-"+name;
-    namespace=namespace.toLowerCase();
-    //Create service
-    Namespace.createNamespace(namespace,workspace);
-    //Create configMap
-    
+const createByHelm = function(namespace,deployname,err, resiult) {
+    var deploysaved=deployname;
+    var datenow=Date.now();
+    DimAppice.get(namespace,function(resu,options){
+        if(!resu.status){
+            resu.status={helm:[]};
+        }
+        resu.status.helm.push({type:'install',date:datenow,deployname:deploysaved,error:err,result:resiult});
+        DimAppice.update(namespace,resu);
+        DimAppice.get(namespace,function(resu2,options2){
+            if(!resu2.status){
+                resu2.status={helm:[]};
+            }
+            var isFound=false;
+            for( var id in resu2.status.helm){
+                var act=resu2.status.helm[id];
+                if(act.date==datenow && act.deployname==deploysaved){
+                    isFound=true;
+                }
+            }
+            if(!isFound){
+                resu2.status.helm.push({type:'install',date:datenow,deployname:deploysaved,error:err,result:resiult});
+                DimAppice.update(namespace,resu2);
+            }
+            
+
+        },null);
+
+    },null);
+
+}
+
+const createAppCompOnNS = function(name,namespace,workspace,services,res) {
     var dataMap=getKeys(name,namespace,workspace);
-    var keysSet=joinStr(dataMap,'=',',');//"DIMIDIUM_CNAME_TARGET="+cname_url+",DIMIDIUM_APP_BASE_URL="+dataMap["DIMIDIUM_APP_BASE_URL"]+",DIMIDIUM_WORKSPACE="+workspace+",DIMIDIUM_APP_NAME="+name+",DIMIDIUM_NAMESPACE="+namespace;
+    
     //Install Service
     var arrayLength = services.length;
     var outputs=[];
@@ -104,39 +138,14 @@ const createAppComp = function(name,workspace,services,res) {
         }
         var releasename=namespace+"-"+deployname.replace('/', '-');
         services[i]['releasename']=releasename;
+        var cloneOfdeployname = JSON.parse(JSON.stringify(deployname));
+        var newKeys=services[i]['parameters'];
+        if(newKeys){
+            dataMap=Object.assign(dataMap, newKeys);
+        }
+        var keysSet=joinStr(dataMap,'=',',');//"DIMIDIUM_CNAME_TARGET="+cname_url+",DIMIDIUM_APP_BASE_URL="+dataMap["DIMIDIUM_APP_BASE_URL"]+",DIMIDIUM_WORKSPACE="+workspace+",DIMIDIUM_APP_NAME="+name+",DIMIDIUM_NAMESPACE="+namespace;
         //push charts on local
-
-        Helm.installRelease(helmName,version,namespace,releasename,keysSet,function (err, resiult){
-            var deploysaved=deployname;
-            var datenow=Date.now();
-            DimAppice.get(namespace,function(resu,options){
-                if(!resu.status){
-                    resu.status={helm:[]};
-                }
-                resu.status.helm.push({type:'install',date:datenow,deployname:deploysaved,error:err,result:resiult});
-                DimAppice.update(namespace,resu);
-                DimAppice.get(namespace,function(resu2,options2){
-                    if(!resu2.status){
-                        resu2.status={helm:[]};
-                    }
-                    var isFound=false;
-                    for( var id in resu2.status.helm){
-                        var act=resu2.status.helm[id];
-                        if(act.date==datenow && act.deployname==deploysaved){
-                            isFound=true;
-                        }
-                    }
-                    if(!isFound){
-                        resu2.status.helm.push({type:'install',date:datenow,deployname:deploysaved,error:err,result:resiult});
-                        DimAppice.update(namespace,resu2);
-                    }
-                    
-    
-                },null);
-
-            },null);
-
-        });
+        Helm.installRelease(helmName,version,namespace,releasename,keysSet,(err, resiult)=>createByHelm(namespace,cloneOfdeployname,err,resiult));
        
   
     }
@@ -147,6 +156,29 @@ const createAppComp = function(name,workspace,services,res) {
     
     res.end(JSON.stringify({id:namespace}));
     return namespace;
+}
+
+const createAppComp = function(name,workspace,services,res) {
+    DimAppice.createDefinition();
+    workspace=workspace.toLowerCase();
+    name=name.toLowerCase();
+    var namespace = workspace+"-"+name;
+    namespace=namespace.toLowerCase();
+    //Create service
+    Namespace.createNamespace(namespace,workspace,function(err,result){
+        console.log('Use err %s %s',err,result);
+        if (err){
+            res.statusCode=500;
+            
+            res.end("Application is terminating. Please wait.");
+            return;
+        }
+        createAppCompOnNS(name,namespace,workspace,services,res);
+
+    });
+    //Create configMap
+    
+    
   };
 
 exports.createApp = function(body,res) {
@@ -405,6 +437,41 @@ const getMergedDimObj = function(body,res) {
     //    pipeline.push(Service.getServices,mergeWithStatusResult);
        // pipeline.push(Pod.getPods,mergeWithStatusResult);
     //}
+    /*function a(next) {
+  console.log('a');
+  next();
+}
+
+function b(next) {
+  console.log('b');
+  next();
+}
+
+function c(next) {
+  console.log('c');
+  next();
+}
+
+function d(next) {
+  console.log('d');
+  next();
+}
+
+
+let fns = [a,b,c,d];
+
+// chain function will call the supplied function
+// and recursively call the chain function with the
+// the next element in the array
+function chain(fn) {
+  if(fn) {
+    fn(() => chain(fns.shift()));
+  }
+}
+
+// start the chain with the first element in the array
+chain(fns.shift());
+*/
     DimAppice.get(appId,getDimObj,res);
     
   }
@@ -479,6 +546,10 @@ const getMergedDimObj = function(body,res) {
     }
     var releasename=namespace+"-"+deployname.replace('/', '-');
     var dataMap=getKeys(appname,namespace,workspace);
+    if(res['parameters']){
+        dataMap=Object.assign(dataMap, res['parameters']);
+    }
+    
     var keysSet=joinStr(dataMap,'=',',');//"DIMIDIUM_CNAME_TARGET="+cname_url+",DIMIDIUM_APP_BASE_URL="+dataMap["DIMIDIUM_APP_BASE_URL"]+",DIMIDIUM_WORKSPACE="+workspace+",DIMIDIUM_APP_NAME="+name+",DIMIDIUM_NAMESPACE="+namespace;
     var datenow=Date.now();
     //push charts on local
@@ -531,7 +602,9 @@ const getMergedDimObj = function(body,res) {
     var appId = body['appId'].value;
     var resour=[];
     resour['name'] = body['service']['value']['name'];
+    resour['parameters'] = body['service']['value']['parameters'];
     resour['deployname'] = body['service']['value']['deployname'];
+
     if(resour['deployname']){
         resour['deployname']=resour['deployname'].toLowerCase();
     }
@@ -553,6 +626,7 @@ const getMergedDimObj = function(body,res) {
     var serviceId = body['serviceId'].value;
     var resour=[];
     resour['name'] = body['service']['value']['name'];
+    resour['parameters'] = body['service']['value']['parameters'];
     resour['deployname'] = body['service']['value']['deployname'];
     if(resour['deployname']){
         resour['deployname']=resour['deployname'].toLowerCase();

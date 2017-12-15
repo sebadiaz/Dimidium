@@ -156,6 +156,10 @@ paths:
           description: "Application Id."
           schema:
             type: string
+        500:
+          description: "Error."
+          schema:
+            type: string
         405:
           description: "Invalid input"
       x-swagger-router-controller: "Application"
@@ -234,6 +238,10 @@ paths:
         schema:
           $ref: "#/definitions/ServiceName"
       responses:
+        500:
+          description: "Error."
+          schema:
+            type: string
         405:
           description: "Invalid input"
       x-swagger-router-controller: "Application"
@@ -418,6 +426,10 @@ definitions:
       version:
         type: "string"
         description: "Version of the service."
+      parameters:
+        type: object
+        additionalProperties:
+          type: string
   TemplateName:
     type: "object"
     required:

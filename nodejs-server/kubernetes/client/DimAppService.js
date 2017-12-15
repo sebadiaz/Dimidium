@@ -59,9 +59,11 @@ exports.create = function(workspace,name,components) {
       var version=components[i]['version'];
       var deployname=components[i]['deployname'];
       var releasename=components[i]['releasename'];
-      manifest['spec']['components']['items'].push({helmname:helmname,deployname:deployname,helmversion:version,releasename:releasename});
+      var parameters=components[i]['parameters'];
+      manifest['spec']['components']['items'].push({helmname:helmname,deployname:deployname,helmversion:version,releasename:releasename,parameters:parameters});
 
   }
+
   var custom=ApiService.getCustomResource("dimidium.enablecloud.github.com");
   var core=ApiService.getCRD();
   console.log("Add resource "+JSON.stringify(manifest));
