@@ -13,3 +13,12 @@ exports.getDeployments = function(namespace,callback,options) {
   
 }
 
+
+exports.getDeploymentsExtra = function(body,options,fn) {
+  console.log('get deployments namespace %s',body );
+  var core=ApiService.getExt(true);
+  //
+  core.namespaces(body).deployments.get().then(result => {;fn(result,options,options.fns.shift());});
+  
+}
+

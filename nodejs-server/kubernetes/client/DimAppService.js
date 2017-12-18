@@ -87,6 +87,15 @@ exports.get = function(name,callback,options) {
   return res;
   
   
+};
+exports.getExtra = function(body,options,fn) {
+  var custom=ApiService.getCustomResource("dimidium.enablecloud.github.com",true);
+  custom.addResource('dimapps');
+  const res = custom.ns.dimapps(body).get().then(result => {fn(result,options,options.fns.shift());},error => {fn(error,options,options.fns.shift());});
+  
+  return res;
+  
+  
 }
 
 

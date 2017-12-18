@@ -29,3 +29,23 @@ exports.getIngresses = function(namespace,callback,options) {
   //core.namespaces(namespace).ing.get().then(result => {callback(result,options);});
   
 }
+
+
+exports.getIngressesExtra = function(body,options,fn) {
+  console.log('get ingress namespace %s',body );
+  try {  
+  var core=ApiService.getGroup(ingress(),true);
+  //
+  
+  console.log('get ingress namespace %s',core.namespaces(body) );
+  
+  
+  core.ns(body).kind(ingress()).get().then(result => {try { fn(result,options,options.fns.shift());} catch (e) {
+    console.error(e);
+  }});
+} catch (e) {
+  console.error(e);
+}
+  //core.namespaces(namespace).ing.get().then(result => {callback(result,options);});
+  
+}
