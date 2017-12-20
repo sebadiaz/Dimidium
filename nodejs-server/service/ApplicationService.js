@@ -227,24 +227,11 @@ exports.deleteApp = function(body) {
     return appId;
   }
 
-    const getDimObjs = function(body,res) {
-        var str = JSON.stringify(body);
-        if (Config.isDebug())
-            console.log('getDimObjs    %s %s',str , body);
-        var items=body['items'];
-        var arrayLength = items.length;
-        var responses=[];
-        for (var i = 0; i < arrayLength; i++) {
-            responses.push(constructDimObj(items[i]));
-        }
-
-       res.end(JSON.stringify(responses));
-      }
-      const pushResponse= function (body,options,fn) {
-        console.log('body %s %s',options.res,options.response);
-        options.res.end(JSON.stringify(options.response));
-        return;
-      }
+  const pushResponse= function (body,options,fn) {
+    console.log('body %s %s',options.res,options.response);
+    options.res.end(JSON.stringify(options.response));
+    return;
+  }
 
   exports.getApp = function(body,res) {
     
@@ -288,6 +275,8 @@ exports.deleteApp = function(body) {
     }
   }
 
+
+  
   exports.listApp = function(body,res) {
     
     var str = JSON.stringify(body);
@@ -297,6 +286,21 @@ exports.deleteApp = function(body) {
     DimAppice.list(getDimObjs,res);
     
   }
+
+  const getDimObjs = function(body,res) {
+    var str = JSON.stringify(body);
+    if (Config.isDebug())
+        console.log('getDimObjs    %s %s',str , body);
+    var items=body['items'];
+    var arrayLength = items.length;
+    var responses=[];
+    for (var i = 0; i < arrayLength; i++) {
+        responses.push(Status.constructDimObj(items[i]));
+    }
+
+   res.end(JSON.stringify(responses));
+  }
+ 
 
   const loadTemplate = function(data,name,deployname,workspace,res) {
     var items=JSON.parse(data);

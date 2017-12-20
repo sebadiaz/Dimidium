@@ -8,12 +8,26 @@ basePath: "/v1"
 schemes:
 - "http"
 - "https"
+securityDefinitions:
+  JWT:
+    description: "Access JWT"
+    type: "apiKey"
+    name: "Authorization"
+    in: "header"
+    
+security:
+  - JWT: []
 paths:
   /service:
     get:
       tags:
       - "service"
       summary: "Retrieve the list of services with the description."
+      security:
+        - JWT: []
+      x-security-scopes:
+        - admin
+        - user
       description: "Should include "
       operationId: "listService"
       consumes:
@@ -30,6 +44,10 @@ paths:
               $ref: "#/definitions/ServiceDesc"
         405:
           description: "Invalid input"
+        403:
+          description: "Access Denied"
+          schema:
+            type: string
       x-swagger-router-controller: "Service"
   /service/{id}:
     delete:

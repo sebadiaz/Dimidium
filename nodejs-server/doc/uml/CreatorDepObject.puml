@@ -1,0 +1,156 @@
+@startuml
+
+' color to use
+' #FFB05A
+' #FFB05A
+' #D5E821
+' #31FFB4
+' #514BEF
+skinparam handwritten false
+skinparam shadowing true
+skinparam shadowing false
+skinparam defaultFontName "Futura"
+
+skinparam activityArrowColor Black
+skinparam activityBackgroundColor White
+skinparam activityBorderColor Black
+
+skinparam actorBackgroundColor White
+skinparam actorBorderColor Black
+
+skinparam usecaseArrowColor Black
+skinparam usecaseArrowColor White
+skinparam usecaseBorderColor Black
+
+skinparam classArrowColor Black
+skinparam classBackgroundColor White
+skinparam classBorderColor Black
+skinparam objectArrowColor Black
+skinparam objectBackgroundColor White
+skinparam objectBorderColor Black
+
+skinparam packageBackgroundColor White
+skinparam packageBorderColor Black
+
+skinparam componentArrowColor Black
+skinparam componentBackgroundColor White
+skinparam componentBorderColor Black
+skinparam componentInterfaceBackgroundColor White
+skinparam componentInterfaceBorderColor Black
+
+skinparam noteBorderColor Black
+
+skinparam stateBorderColor Black
+skinparam stateArrowColor Black
+
+skinparam sequenceArrowColor Black
+skinparam sequenceLifeLineBorderColor Black
+skinparam sequenceParticipantBackgroundColor White
+skinparam sequenceParticipantBorderColor Black
+skinparam sequenceBoxLineColor Black
+skinparam sequenceBoxBorderColor Black
+
+skinparam roundCorner 7
+
+skinparam componentStyle uml2
+
+skinparam interface {
+  backgroundColor RosyBrown
+  borderColor orange
+}
+
+skinparam object {
+	ArrowColor DeepSkyBlue
+	ActorBorderColor DeepSkyBlue
+    BackgroundColor<<Apache>> Red
+    BorderColor<<Apache>> #FF6655
+    FontName Courier
+    BackgroundColor <<Blue>> DeepSkyBlue
+    BorderColor black
+    BackgroundColor gold
+    ArrowFontName Impact
+    ArrowColor #996655
+    ArrowFontColor #777777
+
+}
+
+header
+<font color=red>Warning:</font>
+Draft
+endheader
+center footer Tenant,User,Workspace,Application and Component
+
+
+
+
+interface Domain
+
+actor user
+
+cloud "Azure" {
+
+    [DNSZone]
+    user->Domain
+    Domain->DNSZone
+
+
+cloud "Kubernetes" {
+    package "kube-system" <<Namespace>>{
+        [Controllers]
+
+    }
+
+    package "FabricCreator" <<Namespace>>{
+
+    database "Secret" {
+                    [DockerConfig] #514BEF
+    }
+
+
+
+
+
+    frame "DNS Route" {
+        [ExternalDNS] <<Deployment>>
+        [IngressController] <<Deployment>>
+        interface IngressEntry <<LoadBalancer>>
+        DNSZone->IngressEntry
+    }
+
+    frame "Fabric Creator API" {
+        [MongoDB] <<Deployment>>
+        [DefaultHttp] <<Deployment>>
+
+        [Application]<<CustomResourceDefinition>>
+        interface CreatorEntry <<Ingress>>
+
+        [NginxConfig] <<ConfigMap>>
+        [FabricAccount] <<ServiceAccount>>
+        [FabricCreatorApi] <<Deployment>>
+        CreatorEntry-->FabricCreatorApi
+        MongoDB->FabricCreatorApi
+        FabricCreatorApi-.>ExternalDNS
+        FabricCreatorApi-.>Controllers
+        ExternalDNS->DNSZone
+        DefaultHttp->IngressController
+        NginxConfig->IngressController
+        IngressEntry->IngressController
+
+    }
+
+    frame "Fabric Creator UXP" {
+        interface UXEntry <<Ingress>>
+        interface ReportEntry <<Ingress>>
+        [UXP] <<Deployment>>
+        [Reporting] <<Deployment>>
+        UXEntry->UXP
+        UXP->Reporting
+        ReportEntry-->Reporting
+        UXP-->CreatorEntry
+    }
+    }
+}
+
+}
+
+@enduml

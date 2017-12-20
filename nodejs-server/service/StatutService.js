@@ -150,7 +150,7 @@ exports.mergeWithDeployements = function(res,option){
 
 
 
-  const constructDimObj = function(body) {
+ exports.constructDimObj = function(body) {
     var response=
     {
       "id": body['metadata']['name'],

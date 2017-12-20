@@ -14,11 +14,18 @@
   "private": true,
   "dependencies": {
     "bull": "^3.3.7",
+    "compression": "^1.7.1",
     "connect": "^3.2.0",
+    "cookie-session": "^2.0.0-beta.3",
     "js-yaml": "^3.3.0",
+    "jsonwebtoken": "^8.1.0",
     "kubernetes-client": "^3.17.1",
     "kue": "^0.11.6",
     "mongodb": "^3.0.0-rc0",
+    "passport": "^0.4.0",
+    "passport-openid": "^0.4.0",
+    "passport-openidconnect": "0.0.2",
+    "serve-index": "^1.9.1",
     "swagger-tools": "0.10.1",
     "yamljs": "^0.3.0"
   }
