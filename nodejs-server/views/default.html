@@ -1,0 +1,42 @@
+<html>
+<body>
+
+<form name="myForm" method="post" onsubmit="pushForm();return false;">
+    <div>
+        <label>OpenID:</label>
+        <p>
+            <textarea rows="4" cols="50" name="jwt">eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ</textarea>
+        </p>
+        <select name="select" onchange="document.forms['myForm'].jwt.value=sample[document.forms['myForm'].select.value];">
+                <option value="0">Azure</option>
+                <option value="1">Simple</option>
+              </select>
+        
+        <input type="text" name="url" value="/v1/service"/><br/>
+    </div>
+    <div>
+        <input type="button" value="Sign In" onclick="pushForm();"/>
+    </div>
+</form>
+
+<script>
+
+var sample=[];
+sample['0']=("eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.Intcblx0XCJhdWRcIjogXCJodHRwczpcL1wvY29udG9zby5vbm1pY3Jvc29mdC5jb21cL3NjcmF0Y2hzZXJ2aWNlXCIsXG5cdFwiaXNzXCI6IFwiaHR0cHM6XC9cL3N0cy53aW5kb3dzLm5ldFwvYjk0MTEyMzQtMDlhZi00OWMyLWIwYzMtNjUzYWRjMWYzNzZlXC9cIixcblx0XCJpYXRcIjogMTQxNjk2ODU4OCxcblx0XCJuYmZcIjogMTQxNjk2ODU4OCxcblx0XCJleHBcIjogMTUxNjk3MjQ4OCxcblx0XCJ2ZXJcIjogXCIxLjBcIixcblx0XCJ0aWRcIjogXCJiOTQxMTIzNC0wOWFmLTQ5YzItYjBjMy02NTNhZGMxZjM3NmVcIixcblx0XCJhbXJcIjogW1xuXHRcdFwicHdkXCJcblx0XSxcblx0XCJyb2xlc1wiOiBbXG5cdFx0XCJBZG1pblwiXG5cdF0sXG5cdFwib2lkXCI6IFwiNjUyNmUxMjMtMGZmOS00ZmVjLWFlNjQtYThkNWE3N2NmMjg3XCIsXG5cdFwidXBuXCI6IFwic2FtcGxlLnVzZXJAY29udG9zby5vbm1pY3Jvc29mdC5jb21cIixcblx0XCJ1bmlxdWVfbmFtZVwiOiBcInNhbXBsZS51c2VyQGNvbnRvc28ub25taWNyb3NvZnQuY29tXCIsXG5cdFwic3ViXCI6IFwieWY4QzVlX1ZSa1IxZWdHeEpTRHQ1X29sREZheTZMNWlsQkE4MWhaaFFFSVwiLFxuXHRcImZhbWlseV9uYW1lXCI6IFwiVXNlclwiLFxuXHRcImdpdmVuX25hbWVcIjogXCJTYW1wbGVcIixcblx0XCJncm91cHNcIjogW1xuXHRcdFwiMGUxMjlmNmItNmIwYS00OTQ0LTk4MmQtZjc3NjAwMDYzMmFmXCIsXG5cdFx0XCIzMjNiMTNiMy0xODUxLTRiOTQtOTQ3Zi05YTRkYWNiNTk1ZjRcIixcblx0XHRcIjZlMzJjMjUwLTliMGEtNDQ5MS1iNDI5LTZjNjBkMmNhOWE0MlwiLFxuXHRcdFwiZjNhMTYxYTctOWE1OC00ZThmLTlkNDctYjcwMDIyYTA3NDI0XCIsXG5cdFx0XCI4ZDRjODFiMi1iMWFkLTQ3NmQtOTU3NC01NDRkMTU1YWE2ZmZcIixcblx0XHRcIjFiZjgwMTY0LWZmMjQtNDg2Ni1iMTljLTYyMTJlNWI5YTg0N1wiLFxuXHRcdFwiNzZmODAxMjctZjJjZC00NmY0LThjNTItOGVkZDhiYzc0OWIxXCIsXG5cdFx0XCIwYmEyNzE2MC00NGQwLTQyYjUtYjkwYy00N2IzZmNjNDhlMzVcIlxuXHRdLFxuXHRcImFwcGlkXCI6IFwiYjA3NWRkZWYtMGVmYS0xMjNiLTk5N2ItZGUxMzM3YzI5MTg1XCIsXG5cdFwiYXBwaWRhY3JcIjogXCIxXCIsXG5cdFwic2NwXCI6IFwidXNlcl9pbXBlcnNvbmF0aW9uXCIsXG5cdFwiYWNyXCI6IFwiMVwiXG59Ig.c9eOBPL1zBI9D0ifIgBWkuZ5jWytKMCz7e05oZmm2Lc");
+sample['1']=("eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWV9.TJVA95OrM7E2cBab30RMHrHDcEfxjoYZgeFONFh7HgQ.bjGHttDuZxwYaXvN1p1qkdZ7Dv5i2WO7EXikcF7a3Hs");
+    function pushForm(){
+        var request = new XMLHttpRequest();
+        request.onreadystatechange= function () {
+            if (request.readyState==4) {
+                //handle response
+            }
+        }
+        request.open("GET", document.forms["myForm"].url.value, true);
+        request.setRequestHeader("Authorization","Bearer "+document.forms["myForm"].jwt.value);
+        request.setRequestHeader("Accept","text/plain");
+        request.send("post data");
+        return false;
+    }
+</script>
+</body>
+</html>
