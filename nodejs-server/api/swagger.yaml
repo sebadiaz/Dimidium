@@ -14,9 +14,20 @@ securityDefinitions:
     type: "apiKey"
     name: "Authorization"
     in: "header"
+  Oauth:
+    type: oauth2
+    flow: accessCode
+    authorizationUrl: 'https://oauth.simple.api/authorization'
+    tokenUrl: 'https://oauth.simple.api/token'
+    scopes:
+            read: Grants read access
+            write: Grants write access
+            admin: Grants access to admin operations
     
 security:
   - JWT: []
+    Oauth: [read]
+  
 paths:
   /service:
     get:

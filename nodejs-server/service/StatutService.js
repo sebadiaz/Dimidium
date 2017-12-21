@@ -27,7 +27,7 @@ exports.mergeIngresses = function(body,options,fn) {
     var namespace=options.namespace;
     var str = JSON.stringify(body);
     if (Config.isDebug())
-        console.log('body deeeeee %s %s',str , body);
+        console.log('body  %s %s',str , body);
     try {  
     var items = body['items'];
     var arrayLength = items.length;

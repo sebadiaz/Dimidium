@@ -41,7 +41,16 @@ switch (myArgs[0]) {
 
 // The Swagger document (require it, build it programmatically, fetch it from a URL, ...)
 var spec = fs.readFileSync(path.join(__dirname,'api/swagger.yaml'), 'utf8');
+
+
 var swaggerDoc = jsyaml.safeLoad(spec);
+
+if(swaggerDoc.securityDefinitions && swaggerDoc.securityDefinitions.Oauth){
+  console.log( 'Set Oauth configuration.');
+  swaggerDoc.securityDefinitions.Oauth.authorizationUrl=config.getOauthAuthUrl();
+  swaggerDoc.securityDefinitions.Oauth.tokenUrl=config.getOauthTokenUrl();
+  swaggerDoc.securityDefinitions.Oauth.flow=config.getOauthFlow();
+}
 
 // Initialize the Swagger middleware
 swaggerTools.initializeMiddleware(swaggerDoc, function (middleware) {
@@ -64,7 +73,7 @@ swaggerTools.initializeMiddleware(swaggerDoc, function (middleware) {
   app.use('/static',serveStatic(path.join(__dirname, 'views'), {'index': ['default.html', 'default.htm']}));
   //setup security
   try{
-    app.use(middleware.swaggerSecurity({JWT: verifyToken}));
+    app.use(middleware.swaggerSecurity({JWT: verifyToken,Oauth: function(req, authOrSecDef, token, callback){ return callback(null);}}));
   } catch (e) {
     console.error(e);
   }

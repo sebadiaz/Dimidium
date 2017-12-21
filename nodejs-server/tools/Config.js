@@ -75,4 +75,30 @@ exports.getJWTSecret = function() {
   }
   return secret;
 
-}
+};
+
+
+exports.getOauthAuthUrl= function() {
+  var secret="https://oauth.simple.api/authorization" ;
+  if(process.env['DIMIDIUM_OAUTH_AUTH_URL']){
+    return process.env['DIMIDIUM_OAUTH_AUTH_URL'];
+  }
+  return secret;
+
+};
+exports.getOauthTokenUrl= function() {
+  var secret="https://oauth.simple.api/token" ;
+  if(process.env['DIMIDIUM_OAUTH_TOKEN_URL']){
+    return process.env['DIMIDIUM_OAUTH_TOKEN_URL'];
+  }
+  return secret;
+
+};
+exports.getOauthFlow= function() {
+  var secret="accessCode" ;
+  if(process.env['DIMIDIUM_OAUTH_FLOW']){
+    return process.env['DIMIDIUM_OAUTH_FLOW'];
+  }
+  return secret;
+
+};

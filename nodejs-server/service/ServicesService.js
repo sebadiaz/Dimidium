@@ -27,7 +27,6 @@ const getTemp= function () {
   exports.listService = function(body,res) {
     
     var str = JSON.stringify(body);
-    console.log('body %s %s',str , body);
 
     MongoDBService.listDocuments('helmrepo',function(err,result){
       if(err){
@@ -55,7 +54,6 @@ const getTemp= function () {
 
   exports.deleteService = function(body,res) {
     var str = JSON.stringify(body);
-    console.log('body %s %s',str , body);
     var id = body['id'].value;
     MongoDBService.deleteDocument('helmrepo',{id:id},function(err,result){
       if(err){
@@ -76,7 +74,7 @@ const getTemp= function () {
  
 
 exports.uploadService = function(body,res) {
-  console.log('body %s %s', body);
+
   var file = body.upfile.originalValue.originalname;
   var buffer = body.upfile.originalValue.buffer;
   var categoryName = body['categoryName'].value;
@@ -137,7 +135,7 @@ exports.uploadService = function(body,res) {
 
 exports.downloadChart = function(body,res) {
   var str = JSON.stringify(body);
-  console.log('body %s %s', str,body);
+
   var categoryName = body['categoryName'].value;
   var fileName = body['fileName'].value;
   console.log('file %s categoryName %s buffer %s', fileName,categoryName);
@@ -152,7 +150,7 @@ exports.downloadChart = function(body,res) {
 
 exports.downloadIndex = function(body,res) {
   var str = JSON.stringify(body);
-  console.log('body %s %s', str,body);
+
 
   MongoDBService.listDocuments('helmrepo',function(err,result){
     if (err){
