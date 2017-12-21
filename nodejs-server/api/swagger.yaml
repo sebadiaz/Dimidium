@@ -23,11 +23,6 @@ paths:
       tags:
       - "service"
       summary: "Retrieve the list of services with the description."
-      security:
-        - JWT: []
-      x-security-scopes:
-        - admin
-        - user
       description: "Should include "
       operationId: "listService"
       consumes:

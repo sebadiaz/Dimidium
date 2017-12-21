@@ -53,3 +53,11 @@ exports.isDebug = function() {
   return (process.argv.indexOf("debug") != -1);
 
 };
+exports.getJWTSecret = function() {
+  var secret="secret" 
+  if(process.env['DIMIDIUM_JWT_SECRET']){
+    return process.env['DIMIDIUM_JWT_SECRET'];
+  }
+  return secret;
+
+}

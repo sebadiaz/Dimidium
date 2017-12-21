@@ -10,6 +10,8 @@ var swaggerTools = require('swagger-tools');
 var jsyaml = require('js-yaml');
 var serveStatic = require('serve-static')
 var jwt = require('jsonwebtoken');
+var requser = require('./tools/ReqUser');
+var config = require('./tools/Config');
 var serverPort = 8080;
 
 // swaggerRouter configuration
@@ -82,38 +84,39 @@ swaggerTools.initializeMiddleware(swaggerDoc, function (middleware) {
 
 
 function verifyToken(req, authOrSecDef, token, callback) {
-  console.log('Check secu ');
   //these are the scopes/roles defined for the current endpoint
   var currentScopes = req.swagger.operation["x-security-scopes"];
   
      function sendError() {
          return new Error('Access Denied');
      }
-     console.log("tokk " +token );
      //validate the 'Authorization' header. it should have the following format:
      //'Bearer tokenString'
      if (token && token.indexOf("Bearer ") == 0) {
-      console.log("tokk2 " +token );
          var tokenString = token.split(' ')[1];
-         console.log("dede " +tokenString );
-         jwt.verify(tokenString, 'secret', function (verificationError, decodedToken) {
-          console.log("" +verificationError );
-              console.log("" +decodedToken );
+         jwt.verify(tokenString, config.getJWTSecret(), function (verificationError, decodedToken) {
              //check if the JWT was verified correctly
-             if (verificationError == null && Array.isArray(currentScopes) && decodedToken && decodedToken.role) {
+             if (verificationError == null && decodedToken) {
                  // check if the role is valid for this endpoint
-                 var roleMatch = currentScopes.indexOf(decodedToken.role) !== -1;
+
+                 var roleMatch = true;
+                 if(currentScopes){
+                    roleMatch=currentScopes.indexOf(decodedToken.role) !== -1 || currentScopes.indexOf(decodedToken.roles) !== -1;
+                 }
                  // check if the issuer matches
-                 var issuerMatch = decodedToken.iss == issuer;
+                 var issuerMatch=true;
+                // var issuerMatch = decodedToken.iss == issuer;
   
                  // you can add more verification checks for the
                  // token here if necessary, such as checking if
                  // the username belongs to an active user
-  
+      
                  if (roleMatch && issuerMatch) {
+                     
                      //add the token to the request so that we
                      //can access it in the endpoint code if necessary
                      req.auth = decodedToken;
+                     console.log("Role and User accepted for %s [%s]." ,requser.getUserName(req),requser.getUserId(req) );
                      //if there is no error, just return null in the callback
                      return callback(null);
                  } else {
@@ -122,13 +125,15 @@ function verifyToken(req, authOrSecDef, token, callback) {
                  }
   
              } else {
+                console.log("Error during authentication %s." ,verificationError );
                  //return the error in the callback if the JWT was not verified
-                 return callback(sendError());
+                return callback(sendError());
              }
          });
      } else {
+         console.log("User = %s [%s]." ,requser.getUserName(req),requser.getUserId(req) );
          //return the error in the callback if the Authorization header doesn't have the correct format
-         return callback(sendError());
+         return callback(null);
      }
 
 }
