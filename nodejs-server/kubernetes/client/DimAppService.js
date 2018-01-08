@@ -31,7 +31,7 @@ exports.createDefinition = function() {
   
 }
 
-exports.create = function(workspace,name,components) {
+exports.create = function(workspace,name,username,userid,components) {
   var manifest = {
     apiVersion: `dimidium.enablecloud.github.com/v1`,
     kind: 'DimApplication',
@@ -40,13 +40,16 @@ exports.create = function(workspace,name,components) {
       labels: 
         {
           workspace: workspace,
-          namespace:name
+          namespace:name,
+          username:username
 
         }
       
     },
     spec: {
       workspace:workspace,
+      username:username,
+      userid:userid,
       components: {
         items:[    ]
       }

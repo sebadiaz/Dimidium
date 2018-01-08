@@ -12,6 +12,7 @@ var Helm = require('../kubernetes/helm/HelmService');
 var UpdateDNSJob = require('../jobs/UpdateDNSJob');
 var Config = require('../tools/Config');
 var Status = require('./StatutService');
+var ReqUser = require('../tools/ReqUser');
 
 /**
  * Add a new pet to the store
@@ -30,7 +31,7 @@ const deployByAnnotation= function () {
     return path;
   }
 
-  const getKeys = function(name,namespace,workspace) {
+  const getKeys = function(name,namespace,workspace,username,userid) {
     var base_url="default";
     if(process.argv.indexOf("--base-url") != -1){ //does our flag exist?
         base_url = process.argv[process.argv.indexOf("--base-url") + 1]; //grab the next item
@@ -45,6 +46,8 @@ const deployByAnnotation= function () {
     dataMap["DIMIDIUM_START_DATE"]=new Date().toISOString();
     dataMap["DIMIDIUM_BASE_URL"]=base_url;
     dataMap["DIMIDIUM_WORKSPACE"]=workspace;
+    dataMap["DIMIDIUM_USER"]=username;
+    dataMap["DIMIDIUM_USER_ID"]=userid;
     dataMap["DIMIDIUM_APP_NAME"]=name;
     dataMap["DIMIDIUM_NAMESPACE"]=namespace;
     dataMap["DIMIDIUM_APP_BASE_URL"]=name+"-"+workspace+"."+base_url;
@@ -109,8 +112,8 @@ const createByHelm = function(namespace,deployname,err, resiult) {
 
 }
 
-const createAppCompOnNS = function(name,namespace,workspace,services,res) {
-    var dataMap=getKeys(name,namespace,workspace);
+const createAppCompOnNS = function(name,namespace,workspace,services,res,username,userid) {
+    var dataMap=getKeys(name,namespace,workspace,username,userid);
     
     //Install Service
     var arrayLength = services.length;
@@ -129,7 +132,7 @@ const createAppCompOnNS = function(name,namespace,workspace,services,res) {
   
     }
 
-    DimAppice.create(workspace,namespace,services);
+    DimAppice.create(workspace,namespace,username,userid,services);
 
     for (var i = 0; i < arrayLength; i++) {
         var helmName=services[i]['name'];
@@ -160,14 +163,14 @@ const createAppCompOnNS = function(name,namespace,workspace,services,res) {
     return namespace;
 }
 
-const createAppComp = function(name,workspace,services,res) {
+const createAppComp = function(name,workspace,services,res,username,userid) {
     DimAppice.createDefinition();
     workspace=workspace.toLowerCase();
     name=name.toLowerCase();
     var namespace = workspace+"-"+name;
     namespace=namespace.toLowerCase();
     //Create service
-    Namespace.createNamespace(namespace,workspace,function(err,result){
+    Namespace.createNamespace(namespace,workspace,username,function(err,result){
         console.log('Use err %s %s',err,result);
         if (err){
             res.statusCode=500;
@@ -175,7 +178,7 @@ const createAppComp = function(name,workspace,services,res) {
             res.end("Application is terminating. Please wait.");
             return;
         }
-        createAppCompOnNS(name,namespace,workspace,services,res);
+        createAppCompOnNS(name,namespace,workspace,services,res,username,userid);
 
     });
     //Create configMap
@@ -187,7 +190,7 @@ exports.createApp = function(body,res) {
     var name = body['application']['value']['name'];
     var workspace = body['application']['value']['workspace'];
     var services = body['application']['value']['services'];
-    var namespace=createAppComp(name,workspace,services,res);
+    var namespace=createAppComp(name,workspace,services,res,ReqUser.getUserName(body['authJWT']),ReqUser.getUserId(body['authJWT']));
 
   return namespace;
 }
@@ -361,7 +364,7 @@ exports.deleteApp = function(body) {
         deployname=helmname;
     }
     var releasename=namespace+"-"+deployname.replace('/', '-');
-    var dataMap=getKeys(appname,namespace,workspace);
+    var dataMap=getKeys(appname,namespace,workspace,ReqUser.getUserName(body['authJWT']),ReqUser.getUserId(body['authJWT']));
     if(res['parameters']){
         dataMap=Object.assign(dataMap, res['parameters']);
     }

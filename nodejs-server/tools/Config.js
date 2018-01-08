@@ -102,3 +102,11 @@ exports.getOauthFlow= function() {
   return secret;
 
 };
+
+exports.getJWTUserName= function() {
+  var secret="unique_name" ;
+  if(process.env['DIMIDIUM_JWT_PARAM_NAME']){
+    return process.env['DIMIDIUM_JWT_PARAM_NAME'];
+  }
+  return secret;
+}

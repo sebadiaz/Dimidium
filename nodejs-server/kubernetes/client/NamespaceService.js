@@ -5,11 +5,11 @@ function print(err, result) {
   }
   
 const ApiService = require('./ApiService');
-exports.createNamespace = function(namespace,workspace,callback) {
+exports.createNamespace = function(namespace,workspace,username,callback) {
   console.log('Create namespace %s on workspace %s',namespace , workspace);
   var core=ApiService.getCore();
   //
-  var toPost={'body': {'apiVersion': 'v1','kind': 'Namespace','metadata': {'name': namespace ,'labels':{workspace:workspace}}}};
+  var toPost={'body': {'apiVersion': 'v1','kind': 'Namespace','metadata': {'name': namespace ,'labels':{workspace:workspace,username:username}}}};
   core.namespaces.post(toPost, callback);
   
 }

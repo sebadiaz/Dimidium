@@ -1,7 +1,8 @@
+var Config = require('./Config');
 exports.getUserId = function(req) {
     var user="guest";
-    if(req.auth && req.auth.sub){
-        return  req.auth.sub;
+    if(req && req.sub){
+        return  req.sub;
     }
     return user;
 
@@ -9,11 +10,11 @@ exports.getUserId = function(req) {
 
 exports.getUserName = function(req) {
     var user="guest";
-    if(req.auth ){
-            if(req.auth["unique_name"]){
-                return req.auth["unique_name"];
+    if(req ){
+            if(req[Config.getJWTUserName()]){
+                return req[Config.getJWTUserName()];
             }
-        return  req.auth.sub;
+        return  req.sub;
     }
     return user;
 

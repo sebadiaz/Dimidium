@@ -22,7 +22,6 @@ var Config = require('../tools/Config');
 
 
 exports.mergeIngresses = function(body,options,fn) {
-    console.log('mergeIngresses');
     var result = options.response;
     var namespace=options.namespace;
     var str = JSON.stringify(body);
@@ -59,7 +58,6 @@ exports.mergeIngresses = function(body,options,fn) {
     console.error(e);
   }
   options.response=result;
-  console.log('mergeIngresses next');
   fn(options.namespace,options,options.fns.shift());
 
   
@@ -148,14 +146,13 @@ exports.mergeWithDeployements = function(res,option){
     //Ingress.getIngresses(res.original['metadata']['name'],getMergedIngressesObj,res);
  }
 
-
-
- exports.constructDimObj = function(body) {
+ const constructDimObjInt = function(body) {
     var response=
     {
       "id": body['metadata']['name'],
       "workspace": body['metadata']['labels']['workspace'],
       "name": body['metadata']['name'],
+      "username": body['metadata']['labels']['username'],
       "status":body['status'],
       "services": [
         
@@ -166,7 +163,8 @@ exports.mergeWithDeployements = function(res,option){
     var items=body['spec']['components']['items'];
     var arrayLength = items.length;
     for (var i = 0; i < arrayLength; i++) {
-        console.log('releasename %s',items[i]['releasename']);
+        if (Config.isDebug())
+            console.log('releasename %s',items[i]['releasename']);
         var releasename=items[i]['releasename'];
         var helmname=items[i]['helmname'];
         var deployname=items[i]['deployname'];
@@ -184,8 +182,12 @@ exports.mergeWithDeployements = function(res,option){
     return response;
   }
 
+ exports.constructDimObj = function(body) {
+    return constructDimObjInt(body);
+  }
+
   exports.mergeDimExtra = function(body,options,fn){
-    console.log('Call mergeDimExtra');
+
     var str = JSON.stringify(body);
     if(body['code']){
         options.res.statusCode=body['code'];
@@ -195,14 +197,11 @@ exports.mergeWithDeployements = function(res,option){
 
     if (Config.isDebug())
         console.log('getDimObj    %s %s',str , body);
-    var response=constructDimObj(body);
+    var response=constructDimObjInt(body);
     options.response=response;
     options.namespace=body['metadata']['labels']['namespace']
     //var result={res:res,body:response,original:body};
-    console.log('Call mergeDimExtra next');
     var nextFunc=options.fns.shift();
-    console.log('Call mergeDimExtra next'+fn);
-    console.log('Call mergeDimExtra next'+nextFunc);
     try{
         fn(options.namespace,options,nextFunc);
     } catch (e) {

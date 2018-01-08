@@ -7,6 +7,7 @@ var Helm = require('../kubernetes/helm/HelmService');
 var Yaml1 = require('js-yaml');
 var YAML = require('yamljs');
 var MongoDBService=require('../store/MongoDBService');
+var ReqUser = require('../tools/ReqUser');
 
 function print(err, result) {
   console.log(JSON.stringify(err || result, null, 2));
@@ -25,7 +26,7 @@ const getTemp= function () {
 
 
   exports.listService = function(body,res) {
-    
+    console.log("UserName:"+ReqUser.getUserName(body['authJWT']));
     var str = JSON.stringify(body);
 
     MongoDBService.listDocuments('helmrepo',function(err,result){

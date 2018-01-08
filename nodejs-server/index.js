@@ -124,8 +124,8 @@ function verifyToken(req, authOrSecDef, token, callback) {
                      
                      //add the token to the request so that we
                      //can access it in the endpoint code if necessary
-                     req.auth = decodedToken;
-                     console.log("Role and User accepted for %s [%s]." ,requser.getUserName(req),requser.getUserId(req) );
+                     req.swagger.params.authJWT = decodedToken;
+                     console.log("Role and User accepted for %s [%s]." ,requser.getUserName(req.swagger.params.authJWT),requser.getUserId(req.swagger.params.authJWT) );
                      //if there is no error, just return null in the callback
                      return callback(null);
                  } else {
@@ -140,7 +140,7 @@ function verifyToken(req, authOrSecDef, token, callback) {
              }
          });
      } else {
-         console.log("User = %s [%s]." ,requser.getUserName(req),requser.getUserId(req) );
+         console.log("User = %s [%s]." ,requser.getUserName(req.swagger.params.authJWT),requser.getUserId(req.swagger.params.authJWT) );
          //return the error in the callback if the Authorization header doesn't have the correct format
          return callback(null);
      }
