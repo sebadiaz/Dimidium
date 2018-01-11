@@ -109,4 +109,31 @@ exports.getJWTUserName= function() {
     return process.env['DIMIDIUM_JWT_PARAM_NAME'];
   }
   return secret;
-}
+};
+
+exports.getMonoUrl = function() {
+  var path = "http://localhost:8081";
+  if(process.env['DIMIDIUM_MONOCULAR_URL']){
+    path=process.env['DIMIDIUM_MONOCULAR_URL'];
+  }
+  if(process.argv.indexOf("--monocular-url") != -1){ //does our flag exist?
+    path = process.argv[process.argv.indexOf("--monocular-url") + 1]; //grab the next item
+  }
+
+  return path;
+
+};
+
+exports.getDefaultWorkspace = function() {
+  var workspace = "dimidium";
+  if(process.env['DIMIDIUM_WORKSPACE_NAME']){
+    workspace=process.env['DIMIDIUM_WORKSPACE_NAME'];
+  }
+  if(process.argv.indexOf("--worspace-name") != -1){ //does our flag exist?
+    workspace = process.argv[process.argv.indexOf("--worspace-name") + 1]; //grab the next item
+  }
+
+  return workspace;
+
+};
+

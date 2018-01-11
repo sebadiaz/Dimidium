@@ -362,9 +362,6 @@ definitions:
       id:
         type: "string"
         example: "Application id"
-      workspace:
-        type: "string"
-        example: "Traider"  
       name:
         type: "string"
         example: "TrainerTrading"
@@ -380,8 +377,6 @@ definitions:
       id:
         type: "string"
         example: "Application id"
-      workspace:
-        type: "string"
       name:
         type: "string"
         example: "Trainer Trading"
@@ -459,7 +454,6 @@ definitions:
     required:
     - "templatename"
     - "deployname"
-    - "workspace"
     properties:
       templatename:
         type: "string"
@@ -469,8 +463,5 @@ definitions:
         type: "string"
         example: "ffdc-raas"
         description: "The name of the deployment."
-      workspace:
-        type: "string"
-        example: "sample"
-        description: "Workspace where the template will be deployed."
+      
 
