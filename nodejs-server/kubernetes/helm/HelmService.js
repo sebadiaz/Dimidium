@@ -153,6 +153,24 @@ exports.getLatest = function(release,cb) {
   
 };
 
+const getList = function(cb) {
+  
+  var request=getRequest({url:Config.getMonoUrl()+"/v1/charts"});
+  request.request('GET', { headers: { 'content-type': 'application/json' }, 'path' :''}, cb);
+  var output={};
+  
+
+  
+};
+
+exports.getList = function(cb) {
+  
+  return getList(cb);
+  
+
+  
+};
+
 exports.getRelease = function(releasename,cb) {
   
   var request=getRequest({url:Config.getMonoUrl()+"/v1/releases/"+releasename});

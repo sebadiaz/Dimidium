@@ -3,7 +3,8 @@
 var fs = require('fs'),
     path = require('path'),
     http = require('http');
-
+var url = require('url');
+var proxy = require('proxy-middleware');
 var app = require('connect')();
 var passport = require('passport');
 var swaggerTools = require('swagger-tools');
@@ -71,6 +72,8 @@ swaggerTools.initializeMiddleware(swaggerDoc, function (middleware) {
   app.use(middleware.swaggerUi());
 
   app.use('/static',serveStatic(path.join(__dirname, 'views'), {'index': ['default.html', 'default.htm']}));
+
+  app.use('/assets', proxy(url.parse(config.getMonoUrl()+'/assets')));
   //setup security
   try{
     app.use(middleware.swaggerSecurity({JWT: verifyToken,Oauth: function(req, authOrSecDef, token, callback){ return callback(null);}}));
