@@ -160,7 +160,7 @@ const createAppCompOnNS = function (name, namespace, workspace, services, res, u
 
     }
 
-    DimAppice.create(workspace, namespace, username, userid, services);
+    DimAppice.create(workspace, namespace,name, username, userid, services);
 
     for (var i = 0; i < arrayLength; i++) {
         var helmName = services[i]['name'];
@@ -412,7 +412,7 @@ exports.createAppTemplate = function (body, res) {
         workspace=Config.getDefaultWorkspace();
     }
     var fileName = "static/templates.json";
-    
+
 
     File.loadFile(fileName, data => {
         loadTemplate(data, name, deployname, workspace, res);

@@ -106,7 +106,7 @@ exports.mergeWithDeployements = function(res,option){
                 result['urls']=[];
             }
             var arrayLengthFourth = items[i]['spec']['ports'].length;
-            for (var l = 0; l < arrayLengthFourth; l++) {
+            for (var l = 0; l < arrayLengthFourthname; l++) {
                 if(items[i]['spec']['ports'][l]['port']){
                     var port=items[i]['spec']['ports'][l]['port'];
                     var namedns=undefined;
@@ -147,11 +147,15 @@ exports.mergeWithDeployements = function(res,option){
  }
 
  const constructDimObjInt = function(body) {
+     var name=body['metadata']['labels']['name'];
+     if(!name){
+        name=body['metadata']['name'];
+     }
     var response=
     {
       "id": body['metadata']['name'],
       "workspace": body['metadata']['labels']['workspace'],
-      "name": body['metadata']['name'],
+      "name": name,
       "username": body['metadata']['labels']['username'],
       "status":body['status'],
       "services": [

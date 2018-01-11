@@ -128,7 +128,7 @@ exports.deleteRelease = function(releasename,cb) {
   
   var request=getRequest({url:Config.getMonoUrl()+"/v1/releases/"+releasename+"?purge=true"});
   request.request('DELETE', {
-    headers: { 'content-type': 'application/json' }, 'path' :'' }, (err,result)=>console.log(JSON.stringify(result)));
+    headers: { 'content-type': 'application/json' }, 'path' :'' }, cb);
   var output={};
   
 
