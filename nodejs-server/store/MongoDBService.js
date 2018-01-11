@@ -88,7 +88,9 @@ exports.pushDocument = function(type,document,callback) {
       }
     
     console.log("Connected successfully to server");
-  
+    if (Config.isDebug()){
+      console.log('doc:'+JSON.stringify(document));
+    }
     const db = client.db(dbName);
     insertDocuments(db,type,document,callback);
     client.close();

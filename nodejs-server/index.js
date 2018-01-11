@@ -13,6 +13,7 @@ var serveStatic = require('serve-static')
 var jwt = require('jsonwebtoken');
 var requser = require('./tools/ReqUser');
 var config = require('./tools/Config');
+var Template = require('./service/TemplateService');
 var serverPort = 8080;
 
 // swaggerRouter configuration
@@ -89,6 +90,7 @@ swaggerTools.initializeMiddleware(swaggerDoc, function (middleware) {
     console.log( 'Add repo on helm.');
     var HelmService=require("./kubernetes/helm/HelmService");
     HelmService.repoAdd();
+    Template.preloadTemplate();
   });
 
 });

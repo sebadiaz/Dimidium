@@ -412,6 +412,8 @@ exports.createAppTemplate = function (body, res) {
         workspace=Config.getDefaultWorkspace();
     }
     var fileName = "static/templates.json";
+    
+
     File.loadFile(fileName, data => {
         loadTemplate(data, name, deployname, workspace, res);
     }, () => {

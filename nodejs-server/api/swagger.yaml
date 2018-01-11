@@ -463,5 +463,9 @@ definitions:
         type: "string"
         example: "ffdc-raas"
         description: "The name of the deployment."
+      description:
+        type: "string"
+        example: "ffdc-raas"
+        description: "The description of the deployment."
       
 
